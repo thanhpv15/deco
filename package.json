@@ -1,6 +1,6 @@
 {
   "name": "deco",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Build simple modules with decorators.",
   "main": "index.js",
   "scripts": {
