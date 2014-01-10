@@ -13,8 +13,8 @@ var deco = module.exports = function (decorators, options) {
 };
 
 // __Public Module Methods__
-deco.require = function (path) {
-  var decoratorFor = requireindex(path);
+deco.require = function (path, includes) {
+  var decoratorFor = requireindex(path, includes);
   var decorators = Object.keys(decoratorFor).map(function (key) { return decoratorFor[key] });
   decorators.hash = decoratorFor;
   return decorators;
