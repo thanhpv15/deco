@@ -4,13 +4,12 @@ var requireindex = require('requireindex');
 // __Module Definition__
 var deco = module.exports = function (decorators, options) {
   var o = this;
-  var r = o;
 
   decorators.forEach(function (decorator) {
-    r = decorator.call(r, options);
+    decorator.call(o, options);
   });
 
-  return r;
+  return o;
 };
 
 // __Public Module Methods__
