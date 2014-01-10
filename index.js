@@ -17,6 +17,6 @@ var deco = module.exports = function (decorators, options) {
 deco.require = function (path) {
   var decoratorFor = requireindex(path);
   var decorators = Object.keys(decoratorFor).map(function (key) { return decoratorFor[key] });
-  decorators.hash = decoratorsFor;
+  decorators.hash = decoratorFor;
   return decorators;
 };
