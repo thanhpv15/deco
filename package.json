@@ -1,0 +1,20 @@
+{
+  "name": "deco",
+  "version": "0.0.1",
+  "description": "Build simple modules with decorators.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "keywords": [
+    "decorator",
+    "decorate",
+    "mixin"
+  ],
+  "author": "William Riley-Land",
+  "license": "MIT",
+  "dependencies": {
+    "requireindex": "~1.0.1"
+  }
+}
