@@ -7,7 +7,7 @@ var deco = module.exports = function (decorators, options) {
   var r = o;
 
   decorators.forEach(function (decorator) {
-    r = decorator.apply(r, options);
+    r = decorator.call(r, options);
   });
 
   return r;
