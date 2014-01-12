@@ -1,10 +1,10 @@
 {
   "name": "deco",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Build simple modules with decorators.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --bail --timeout 5000"
   },
   "repository": "",
   "keywords": [
