@@ -88,6 +88,7 @@ deco.builtin = {};
 // A decorator that calls `.set` on each cobnstructor options argument.
 // Useful with Express apps.
 deco.builtin.setOptions = function (options) {
+  var that = this;
   Object.keys(options).forEach(function (key) {
     var value = options[key];
     that.set(key, value);
