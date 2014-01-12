@@ -24,19 +24,20 @@ var deco = module.exports = function deco () {
   var decorators = parse(arguments);
   // Default constructor hash.
   var defaults = {};
-  // Protected member data.
-  var protect = {};
 
-  var constructor = function (incoming, externalProtect) {
+  // Protect is protected instance data
+  var constructor = function (incoming, protect) {
     var actAsDecorator = (arguments.length === 2);
     var merged = deco.merge(defaults, incoming);
     var o;
 
+    if (!protect) protect = {};
+
     if (actAsDecorator) o = this;
-    else o = Object.create(constructor.super_ || Object);
+    else o = constructor.super_ ? constructor.super_() : Object.create(Object);
 
     decorators.forEach(function (decorator) {
-      decorator.call(o, merged, externalProtect || protect);
+      decorator.call(o, merged, protect);
     });
 
     return o;
