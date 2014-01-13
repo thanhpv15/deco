@@ -34,7 +34,7 @@ var deco = module.exports = function deco () {
     if (!protect) protect = {};
 
     var actAsDecorator = (arguments.length === 2);
-    var merged = typeof incoming === 'object' ? deco.merge(defaults, incoming) : incoming;
+    var merged = typeof incoming === 'object' ? deco.merge(defaults, incoming) : incoming || {};
     var overwritten;
     var o;
 
@@ -89,6 +89,8 @@ deco.require = function () {
 };
 
 // __Built-In Decorators__
+
+// TODO builtins should be decorators?
 
 deco.builtin = {};
 

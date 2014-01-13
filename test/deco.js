@@ -241,4 +241,14 @@ describe('deco', function () {
     constructor('ragtime');
   });
 
+  it('should provide a default constructor options object', function () {
+    var constructor = deco();
+
+    constructor.decorators(function (options, protect) {
+      expect(options).to.eql({});
+    });
+
+    constructor();
+  });
+
 });
