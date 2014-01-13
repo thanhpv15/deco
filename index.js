@@ -11,7 +11,10 @@ function parse (args) {
 
   if (!initial) decorators = [];
   else if (typeof initial === 'function') decorators = [].concat(initial);
-  else if (Array.isArray(initial)) decorators = [].concat(initial);
+  else if (Array.isArray(initial)) {
+    if (initial.some(function (d) { return typeof d !== 'function' })) throw new Error('Array contained a non-function.')
+    decorators = [].concat(initial);
+  }
   else if (typeof initial === 'string') decorators = deco.require.apply(deco, args);
   else throw new Error('Indecipherable arguments.');
 
@@ -27,17 +30,19 @@ var deco = module.exports = function deco () {
 
   // Protect is protected instance data
   var constructor = function (incoming, protect) {
-    var actAsDecorator = (arguments.length === 2);
-    var merged = deco.merge(defaults, incoming);
-    var o;
-
+    if (!incoming) incoming = {};
     if (!protect) protect = {};
+
+    var actAsDecorator = (arguments.length === 2);
+    var merged = typeof incoming === 'object' ? deco.merge(defaults, incoming) : incoming;
+    var overwritten;
+    var o;
 
     if (actAsDecorator) o = this;
     else o = constructor.super_ ? constructor.super_() : Object.create(Object);
 
     decorators.forEach(function (decorator) {
-      decorator.call(o, merged, protect);
+      overwritten = decorator.call(o, overwritten || merged, protect);
     });
 
     return o;
