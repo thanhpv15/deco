@@ -42,7 +42,8 @@ var deco = module.exports = function deco () {
     else o = constructor.super_ ? constructor.super_() : Object.create(Object);
 
     decorators.forEach(function (decorator) {
-      overwritten = decorator.call(o, overwritten || merged, protect);
+      var r = decorator.call(o, overwritten || merged, protect);
+      if (r) overwritten = r;
     });
 
     return o;

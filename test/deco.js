@@ -213,11 +213,32 @@ describe('deco', function () {
     });
 
     constructor.decorators(function (options, protect) {
+      return undefined;
+    });
+
+    constructor.decorators(function (options, protect) {
       expect(options).to.have.property('wrapper', 'ping');
     });
 
     constructor('ping');
   });
 
+  it('should allow a later decorator to overwrite options', function () {
+    var constructor = deco();
+
+    constructor.decorators(function (options, protect) {
+      return { wrapper: options };
+    });
+
+    constructor.decorators(function (options, protect) {
+      return { genre: 'ragtime' };
+    });
+
+    constructor.decorators(function (options, protect) {
+      expect(options).to.have.property('genre', 'ragtime');
+    });
+
+    constructor('ragtime');
+  });
 
 });
