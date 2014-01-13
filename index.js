@@ -6,17 +6,18 @@ var requireindex = require('requireindex');
 function getValue (key) { return this[key] }
 
 function parse (args) {
-  var initial = args[0];
+  var incoming = args[0];
   var decorators;
 
-  if (!initial) decorators = [];
-  else if (typeof initial === 'function') decorators = [].concat(initial);
-  else if (Array.isArray(initial)) {
-    if (initial.some(function (d) { return typeof d !== 'function' })) throw new Error('Array contained a non-function.')
-    decorators = [].concat(initial);
-  }
-  else if (typeof initial === 'string') decorators = deco.require.apply(deco, args);
+  // Parse.
+  if (!incoming) decorators = [];
+  else if (typeof incoming === 'function') decorators = [].concat(incoming);
+  else if (Array.isArray(incoming)) decorators = [].concat(incoming);
+  else if (typeof incoming === 'string') decorators = deco.require.apply(deco, args);
   else throw new Error('Indecipherable arguments.');
+
+  // Validate.
+  if (decorators.some(function (d) { return typeof d !== 'function' })) throw new Error('Encountered non-function decorator.')
 
   return decorators;
 }
@@ -30,20 +31,23 @@ var deco = module.exports = function deco () {
 
   // Protect is protected instance data
   var constructor = function (incoming, protect) {
+    var o;
+    var merged;
+    var overwritten;
+
     if (!incoming) incoming = {};
     if (!protect) protect = {};
-
-    var actAsDecorator = (arguments.length === 2);
-    var merged = typeof incoming === 'object' ? deco.merge(defaults, incoming) : incoming || {};
-    var overwritten;
-    var o;
-
-    if (actAsDecorator) o = this;
+    if (typeof incoming === 'object') merged = deco.merge(defaults, incoming);
+    // Two arguments means the constructor was called as a decorator.
+    if (arguments.length === 2) o = this;
+    // Otherwise, construct an object before applying decorators.
     else o = constructor.super_ ? constructor.super_() : Object.create(Object);
 
+    // Apply decorators.
     decorators.forEach(function (decorator) {
-      var r = decorator.call(o, overwritten || merged, protect);
-      if (r) overwritten = deco.merge(defaults, r);
+      var options = overwritten || merged || incoming || {};
+      var out = decorator.call(o, options, protect);
+      if (out) overwritten = deco.merge(defaults, out);
     });
 
     return o;
@@ -67,8 +71,8 @@ var deco = module.exports = function deco () {
 // __Public Module Members__
 
 deco.merge = function (defaults, incoming) {
-  var merged = {};
   var keys;
+  var merged = {};
 
   if (!defaults) defaults = {};
   if (!incoming) incoming = {};
@@ -90,11 +94,9 @@ deco.require = function () {
 
 // __Built-In Decorators__
 
-// TODO builtins should be decorators?
-
 deco.builtin = {};
 
-// A decorator that calls `.set` on each cobnstructor options argument.
+// A decorator that calls `.set` on each constructor options argument.
 // Useful with Express apps.
 deco.builtin.setOptions = function (options) {
   var that = this;

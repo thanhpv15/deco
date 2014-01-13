@@ -192,7 +192,7 @@ describe('deco', function () {
 
   it('should make sure array is array of functions', function () {
     var f = deco.bind(deco, ['barron von beluga']);
-    expect(f).to.throwException(/Array contained a non-function[.]/);
+    expect(f).to.throwException(/Encountered non-function decorator[.]/);
   });
 
   it('should leave non-object constructor options alone', function () {
