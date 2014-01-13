@@ -1,6 +1,6 @@
 // __Dependencies__
-var requireindex = require('requireindex');
 var util = require('util');
+var requireindex = require('requireindex');
 
 // __Private Module Members__
 function getValue (key) { return this[key] }
