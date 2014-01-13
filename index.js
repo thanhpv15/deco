@@ -4,6 +4,7 @@ var requireindex = require('requireindex');
 
 // __Private Module Members__
 function getValue (key) { return this[key] }
+function isNotFunction (value) { return typeof value !== 'function' }
 
 function parse (args) {
   var incoming = args[0];
@@ -11,13 +12,13 @@ function parse (args) {
 
   // Parse.
   if (!incoming) decorators = [];
-  else if (typeof incoming === 'function') decorators = [].concat(incoming);
   else if (Array.isArray(incoming)) decorators = [].concat(incoming);
+  else if (typeof incoming === 'function') decorators = [].concat(incoming);
   else if (typeof incoming === 'string') decorators = deco.require.apply(deco, args);
   else throw new Error('Indecipherable arguments.');
 
   // Validate.
-  if (decorators.some(function (d) { return typeof d !== 'function' })) throw new Error('Encountered non-function decorator.')
+  if (decorators.some(isNotFunction)) throw new Error('Encountered non-function decorator.');
 
   return decorators;
 }
@@ -35,19 +36,28 @@ var deco = module.exports = function deco () {
     var merged;
     var overwritten;
 
-    if (!incoming) incoming = {};
+    // Default values.
     if (!protect) protect = {};
+    if (incoming === undefined || incoming === null) incoming = {};
+    // Merge the incoming options with any defaults, if they're a hash.
     if (typeof incoming === 'object') merged = deco.merge(defaults, incoming);
-    // Two arguments means the constructor was called as a decorator.
+
+    // Build the object to be decorated, if necessary.  Two arguments means the
+    // constructor was called as a decorator.  This means the object that is
+    // being decorated is already created.
     if (arguments.length === 2) o = this;
-    // Otherwise, construct an object before applying decorators.
-    else o = constructor.super_ ? constructor.super_() : Object.create(Object);
+    // Otherwise, construct an object before applying decorators.  If the
+    // constructor inherits, create the object to be decorated by calling the
+    // inherited constructor.
+    else if (constructor.super_) o = constructor.super_();
+    // If the constructor doesn't inherit, create a vanilla object to be decorated.
+    else o = { };
 
     // Apply decorators.
     decorators.forEach(function (decorator) {
-      var options = overwritten || merged || incoming || {};
+      var options = overwritten || merged || incoming;
       var out = decorator.call(o, options, protect);
-      if (out) overwritten = deco.merge(defaults, out);
+      if (out) overwritten = deco.merge(overwritten || defaults, out);
     });
 
     return o;

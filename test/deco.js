@@ -199,10 +199,10 @@ describe('deco', function () {
     var constructor = deco();
 
     constructor.decorators(function (options, protect) {
-      expect(options).to.be('ping');
+      expect(options).to.be(0);
     });
 
-    constructor('ping');
+    constructor(0);
   });
 
   it('should allow a decorator to overwrite options for the rest of the chain', function () {
