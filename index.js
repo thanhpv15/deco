@@ -43,7 +43,7 @@ var deco = module.exports = function deco () {
 
     decorators.forEach(function (decorator) {
       var r = decorator.call(o, overwritten || merged, protect);
-      if (r) overwritten = r;
+      if (r) overwritten = deco.merge(defaults, r);
     });
 
     return o;
