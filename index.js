@@ -31,13 +31,17 @@ var deco = module.exports = function deco () {
   var defaults = {};
 
   // Protect is protected instance data
-  var constructor = function (incoming, protect) {
+  var Constructor = function (incoming, protect) {
     var o;
     var merged;
     var overwritten;
 
     // Default values.
-    if (!protect) protect = {};
+    if (!protect) protect = {
+      options: function (incoming) {
+        overwritten = deco.merge(overwritten || defaults, incoming);
+      }
+    };
     if (incoming === undefined || incoming === null) incoming = {};
     // Merge the incoming options with any defaults, if they're a hash.
     if (typeof incoming === 'object') merged = deco.merge(defaults, incoming);
@@ -49,15 +53,13 @@ var deco = module.exports = function deco () {
     // Otherwise, construct an object before applying decorators.  If the
     // constructor inherits, create the object to be decorated by calling the
     // inherited constructor.
-    else if (constructor.super_) o = constructor.super_();
+    else if (Constructor.super_) o = Constructor.super_();
     // If the constructor doesn't inherit, create a vanilla object to be decorated.
     else o = {};
 
     // Apply decorators.
     decorators.forEach(function (decorator) {
-      var options = overwritten || merged || incoming;
-      var out = decorator.call(o, options, protect);
-      if (out) overwritten = deco.merge(overwritten || defaults, out);
+      decorator.call(o, overwritten || merged || incoming, protect);
     });
 
     return o;
