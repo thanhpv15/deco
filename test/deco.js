@@ -154,15 +154,27 @@ describe('deco', function () {
   });
 
   it('should allow inheriting', function () {
-    var Parent = function Parent () { return this || new Parent() };
+    var Parent = function Parent () {};
     var constructor = deco();
     var o;
 
     constructor.inherit(Parent);
     o = constructor();
 
-    // TODO ? // expect(o instanceof Parent).to.be(true);
-    // TODO ? // expect(Parent.isPrototypeOf(o)).to.be(true);
+    expect(o instanceof Parent).to.be(false);
+    expect(Parent.isPrototypeOf(o)).to.be(false);
+  });
+
+  it('should allow inheriting, forcing use of `new` keyword', function () {
+    var Parent = function Parent () {};
+    var constructor = deco();
+    var o;
+
+    constructor.inherit(Parent, true);
+    o = constructor();
+
+    expect(o instanceof Parent).to.be(true);
+    expect(Parent.isPrototypeOf(o)).to.be(false);
   });
 
   it('should allow constructors to act as decorators', function () {

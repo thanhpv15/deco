@@ -1,6 +1,6 @@
 {
   "name": "deco",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Compose modular decorators to build constructors.  Your Node.js code will never have been as organized, reusable, and pluggable.",
   "main": "index.js",
   "scripts": {

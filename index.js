@@ -29,6 +29,8 @@ var deco = module.exports = function deco () {
   var decorators = parse(arguments);
   // Default constructor hash.
   var defaults = {};
+  // Static protected members.
+  var internal = {};
 
   // Protect is protected instance data
   var Constructor = function (incoming, protect) {
@@ -36,12 +38,15 @@ var deco = module.exports = function deco () {
     var merged;
     var overwritten;
 
-    // Default values.
-    if (!protect) protect = {
-      options: function (incoming) {
-        overwritten = deco.merge(overwritten || defaults, incoming);
-      }
-    };
+    // Default protected instance values.
+    if (!protect) {
+      protect = {
+        options: function (incoming) {
+          overwritten = deco.merge(overwritten || defaults, incoming);
+        }
+      };
+    }
+    // Initialize the incoming constructor options, if necessary.
     if (incoming === undefined || incoming === null) incoming = {};
     // Merge the incoming options with any defaults, if they're a hash.
     if (typeof incoming === 'object') merged = deco.merge(defaults, incoming);
@@ -53,7 +58,10 @@ var deco = module.exports = function deco () {
     // Otherwise, construct an object before applying decorators.  If the
     // constructor inherits, create the object to be decorated by calling the
     // inherited constructor.
-    else if (Constructor.super_) o = Constructor.super_();
+    else if (Constructor.super_) {
+      if (internal.useNew) o = new Constructor.super_();
+      else o = Constructor.super_();
+    }
     // If the constructor doesn't inherit, create a vanilla object to be decorated.
     else o = {};
 
@@ -73,7 +81,8 @@ var deco = module.exports = function deco () {
     defaults = deco.merge(defaults, incoming);
   };
 
-  Constructor.inherit = function (super_) {
+  Constructor.inherit = function (super_, useNew) {
+    internal.useNew = useNew ? true : false;
     util.inherits(Constructor, super_);
   };
 
