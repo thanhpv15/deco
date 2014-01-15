@@ -51,7 +51,7 @@ var deco = module.exports = function deco () {
     // inherited constructor.
     else if (constructor.super_) o = constructor.super_();
     // If the constructor doesn't inherit, create a vanilla object to be decorated.
-    else o = { };
+    else o = {};
 
     // Apply decorators.
     decorators.forEach(function (decorator) {

@@ -1,6 +1,6 @@
 deco.js
 =======
-Compose modular decorators to build constructors.
+Compose modular decorators to build constructors.  You're Node.js code will never have been as organized and pluggable.
 
 Summary
 -------
