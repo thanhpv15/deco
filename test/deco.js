@@ -154,13 +154,14 @@ describe('deco', function () {
   });
 
   it('should allow inheriting', function () {
-    var Parent = function Parent () {};
+    var Parent = function Parent () { return this || new Parent() };
     var constructor = deco();
     var o;
 
     constructor.inherit(Parent);
     o = constructor();
 
+    // TODO ? // expect(o instanceof Parent).to.be(true);
     // TODO ? // expect(Parent.isPrototypeOf(o)).to.be(true);
   });
 
@@ -209,14 +210,14 @@ describe('deco', function () {
     var constructor = deco();
 
     constructor.decorators(function (options, protect) {
-      return { wrapper: options };
+      protect.options({ wrapper: options });
     });
 
     constructor.decorators(function (options, protect) {
-      return undefined;
+      protect.options(undefined);
     });
 
-    constructor.decorators(function (options, protect) {
+    constructor.decorators(function (options) {
       expect(options).to.have.property('wrapper', 'ping');
     });
 
@@ -226,16 +227,16 @@ describe('deco', function () {
   it('should allow a later decorator to overwrite options', function () {
     var constructor = deco();
 
-    constructor.decorators(function (options, protect) {
-      return { wrapper: options };
+    constructor.decorators(function (s, protect) {
+      protect.options({ genre: s });
     });
 
     constructor.decorators(function (options, protect) {
-      return { genre: 'ragtime' };
+      protect.options({ genre: 'r&b' });
     });
 
-    constructor.decorators(function (options, protect) {
-      expect(options).to.have.property('genre', 'ragtime');
+    constructor.decorators(function (options) {
+      expect(options).to.have.property('genre', 'r&b');
     });
 
     constructor('ragtime');

@@ -70,18 +70,18 @@ Deco.js constructors are themselves decorators!
 
 Protected instance members are passed into your decorators by deco.  Each constructed object has internal access to protected data, but it is hidden from outside code.
 
-    var Bee = deco(function (options, protected) {
-      protected.poisoned = true;
+    var Bee = deco(function (options, protect) {
+      protect.poisoned = true;
     });
 
-    Bee.decorators(function (options, protected) {
-      if (protected.poisoned) this.behavior = 'erratic';
+    Bee.decorators(function (options, protect) {
+      if (protect.poisoned) this.behavior = 'erratic';
     });
 
-To overwrite constructor options, return a value.  The returned options will be merged with the constructor's defaults.
+To overwrite constructor options, use the protected `options` instance method.  The altered options will be merged with the constructor's defaults.
 
-    var FortifiedWine = deco(function (optionsString) {
-      return { name: optionsString };
+    var FortifiedWine = deco(function (optionsString, protect) {
+      protect.options({ name: optionsString });
     });
 
     FortifiedWine.decorators(function (options) {
