@@ -10,7 +10,10 @@
   "keywords": [
     "decorator",
     "decorate",
-    "mixin"
+    "mixin",
+    "organize",
+    "partials",
+    "partial classes"
   ],
   "author": "William Riley-Land",
   "license": "MIT",
