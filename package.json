@@ -1,7 +1,7 @@
 {
   "name": "deco",
-  "version": "0.5.5",
-  "description": "Build simple modules with decorators.",
+  "version": "0.5.6",
+  "description": "Compose modular decorators to build constructors.  You're Node.js code will never have been as organized, reusable, and pluggable.",
   "main": "index.js",
   "scripts": {
     "test": "mocha --bail --timeout 5000"
