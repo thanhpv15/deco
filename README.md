@@ -9,7 +9,7 @@ Summary
  * Supports public, private, and protected instance members
  * Build constructors & modules in a way similar to partials
  * Uses Node's built-in inherits functionality
- *
+ * Easily plug your constructors at runtime with additional decorators.
 
 Usage Overview
 --------------
