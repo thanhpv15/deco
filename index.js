@@ -65,19 +65,19 @@ var deco = module.exports = function deco () {
     return o;
   };
 
-  constructor.decorators = function () {
+  Constructor.decorators = function () {
     decorators = decorators.concat(parse(arguments));
   };
 
-  constructor.defaults = function (incoming) {
+  Constructor.defaults = function (incoming) {
     defaults = deco.merge(defaults, incoming);
   };
 
-  constructor.inherit = function (super_) {
-    util.inherits(constructor, super_);
+  Constructor.inherit = function (super_) {
+    util.inherits(Constructor, super_);
   };
 
-  return constructor;
+  return Constructor;
 };
 
 // __Public Module Members__
