@@ -7,9 +7,9 @@ Summary
 
  * Compose decorators into constructors and modules
  * Supports public, private, and protected instance members
- * Build constructors & modules in a way similar to partials
+ * Build constructors & modules in a way similar to partial classes
  * Uses Node's built-in inherits functionality
- * Easily plug your constructors at runtime with additional decorators.
+ * Easily plug your constructors at runtime with additional decorators
 
 Usage Overview
 --------------
@@ -25,7 +25,7 @@ Inheritence can be achieved by the `inherits` constructor method.  For example t
 
     Constructor.inherits(require('express'));
 
-To provide a constructor with decorators, either
+To provide a constructor with decorators, use the `decorators` constructor method.
 
     Constructor.decorators(function () {
       this.cheese = 'Shropshire Blue';
@@ -58,11 +58,11 @@ Deco.js provides a better way to provide default constructor options.
 
 Load a directory of decorator files into a constructor by sending in a path.
 
-    var FromDirectory = deco(__dirname);
+    var Composed = deco(__dirname);
 
 Or to only load specific files:
 
-    var Composed = deco(__dirname, [ 'decorator1', 'decorator2' ]);
+    Composed = deco(__dirname, [ 'decorator1', 'decorator2' ]);
 
 Deco.js constructors are themselves decorators!
 
