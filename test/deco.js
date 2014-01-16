@@ -9,6 +9,7 @@ describe('deco', function () {
 
     expect(constructor).to.be.a(Function);
     expect(o).to.be.an(Object);
+    expect(o).to.be.a(constructor);
     expect(Object.keys(o)).to.eql([]);
   });
 
@@ -16,8 +17,6 @@ describe('deco', function () {
     var constructor = deco(function () { this.genre = 'reggae' });
     var o = constructor();
 
-    expect(constructor).to.be.a(Function);
-    expect(o).to.be.an(Object);
     expect(o).to.have.property('genre', 'reggae');
   });
 
@@ -27,8 +26,6 @@ describe('deco', function () {
     var constructor = deco([decorator1, decorator2]);
     var o = constructor();
 
-    expect(constructor).to.be.a(Function);
-    expect(o).to.be.an(Object);
     expect(o).to.have.property('artist', 'busy signal');
     expect(o).to.have.property('genre', 'reggae');
   });
@@ -37,8 +34,6 @@ describe('deco', function () {
     var constructor = deco(__dirname + '/decorators');
     var o = constructor();
 
-    expect(constructor).to.be.a(Function);
-    expect(o).to.be.an(Object);
     expect(o).to.have.property('artist', 'busy signal');
     expect(o).to.have.property('genre', 'reggae');
   });
@@ -47,8 +42,6 @@ describe('deco', function () {
     var constructor = deco(__dirname + '/decorators', ['d1']);
     var o = constructor();
 
-    expect(constructor).to.be.a(Function);
-    expect(o).to.be.an(Object);
     expect(o).not.to.have.property('artist');
     expect(o).to.have.property('genre', 'reggae');
   });
@@ -60,9 +53,6 @@ describe('deco', function () {
     constructor.decorators(require('./decorators/d1'));
 
     o = constructor();
-
-    expect(constructor).to.be.a(Function);
-    expect(o).to.be.an(Object);
     expect(o).to.have.property('genre', 'reggae');
   });
 
@@ -75,10 +65,6 @@ describe('deco', function () {
     constructor.decorators([ decorator1, decorator2 ]);
 
     o = constructor();
-
-    expect(constructor).to.be.a(Function);
-    expect(o).to.be.an(Object);
-    expect(o).to.have.property('artist', 'busy signal');
     expect(o).to.have.property('genre', 'reggae');
   });
 
@@ -89,9 +75,6 @@ describe('deco', function () {
     constructor.decorators(__dirname + '/decorators');
 
     o = constructor();
-
-    expect(constructor).to.be.a(Function);
-    expect(o).to.be.an(Object);
     expect(o).to.have.property('artist', 'busy signal');
     expect(o).to.have.property('genre', 'reggae');
   });
@@ -103,9 +86,6 @@ describe('deco', function () {
     constructor.decorators(__dirname + '/decorators', ['d1']);
 
     o = constructor();
-
-    expect(constructor).to.be.a(Function);
-    expect(o).to.be.an(Object);
     expect(o).not.to.have.property('artist');
     expect(o).to.have.property('genre', 'reggae');
   });
@@ -120,9 +100,6 @@ describe('deco', function () {
     constructor.decorators(decorator2);
 
     o = constructor();
-
-    expect(constructor).to.be.a(Function);
-    expect(o).to.be.an(Object);
     expect(o).to.have.property('artist', 'busy signal');
     expect(o).to.have.property('genre', 'reggae');
   });
@@ -154,26 +131,29 @@ describe('deco', function () {
   });
 
   it('should allow inheriting', function () {
-    var Parent = function Parent () {};
+    var Parent = function Parent () { return this };
     var constructor = deco();
     var o;
 
     constructor.inherit(Parent);
-    o = constructor();
 
-    expect(o instanceof Parent).to.be(false);
-    expect(Parent.isPrototypeOf(o)).to.be(false);
+    o = constructor();
+    expect(o).to.be.an(Object);
+    expect(o).to.be.a(Parent);
+    expect(o).to.be.a(constructor);
   });
 
   it('should allow inheriting, forcing use of `new` keyword', function () {
-    var constructor = deco();
+    var constructor = deco(function (message) { this.message = message });
     var message = 'Test error message.';
     var o;
 
     constructor.inherit(Error, true);
-    o = constructor(message);
 
+    o = constructor(message);
+    expect(o).to.be.an(Object);
     expect(o).to.be.an(Error);
+    expect(o).to.be.a(constructor);
     expect(o).to.have.property('message', message);
   });
 
@@ -184,7 +164,6 @@ describe('deco', function () {
 
     expect(constructor1).to.be.a(Function);
     expect(constructor2).to.be.a(Function);
-    expect(o).to.be.an(Object);
     expect(o).to.have.property('artist', 'busy signal');
     expect(o).to.have.property('genre', 'reggae');
   });

@@ -47,6 +47,7 @@ var deco = module.exports = function deco () {
         }
       };
     }
+
     // Initialize the incoming constructor options, if necessary.
     if (incoming === undefined || incoming === null) incoming = {};
     // Merge the incoming options with any defaults, if they're a hash.
@@ -59,12 +60,11 @@ var deco = module.exports = function deco () {
     // Otherwise, construct an object before applying decorators.  If the
     // constructor inherits, create the object to be decorated by calling the
     // inherited constructor.
-    else if (Constructor.super_) {
-      if (internal.useNew) o = new Constructor.super_(incoming); // TODO call with all arguments
-      else o = Constructor.super_(incoming);
-    }
-    // If the constructor doesn't inherit, create a vanilla object to be decorated.
-    else o = {};
+    else o = Object.create(Constructor.prototype);
+
+    // if (internal.useNew) o = new Constructor.super_(incoming);
+    // else
+    if (Constructor.super_) Constructor.super_.call(o, incoming);
 
     // Apply decorators.
     decorators.forEach(function (decorator) {
