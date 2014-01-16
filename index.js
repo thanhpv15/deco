@@ -29,14 +29,15 @@ var deco = module.exports = function deco () {
   var decorators = parse(arguments);
   // Default constructor hash.
   var defaults = {};
-  // Static protected members.
-  var internal = {};
 
   // Protect is protected instance data
   // TODO always make protect last, so that vairable number of arguments are allowed for initial Constructor call
   var Constructor = function (incoming, protect) {
+    // The object to be decorated.
     var o;
+    // Incoming constructor options merged with defaults.
     var merged;
+    // Constructor options that have been overwritten by a decorator.
     var overwritten;
 
     // Default protected instance values.
@@ -53,24 +54,23 @@ var deco = module.exports = function deco () {
     // Merge the incoming options with any defaults, if they're a hash.
     if (typeof incoming === 'object') merged = deco.merge(defaults, incoming);
 
-    // Build the object to be decorated, if necessary.  Two arguments means the
-    // constructor was called as a decorator.  This means the object that is
-    // being decorated is already created.
-    if (arguments.length === 2) o = this;
-    // Otherwise, construct an object before applying decorators.  If the
-    // constructor inherits, create the object to be decorated by calling the
-    // inherited constructor.
+    // If `this`, the object to be decorated, has already been set it means
+    // the object that is being decorated is already created. (It will be set to
+    // `global` if not, thus creating the danger associated with the `new`
+    // keyword, and its accidental omission.)
+    if (this !== global) o = this;
+    // If it hasn't been set yet, construct an object before applying decorators.
     else o = Object.create(Constructor.prototype);
 
-    // if (internal.useNew) o = new Constructor.super_(incoming);
-    // else
+    // If the constructor inherits, call the super constructor on the object
+    // to be decorated.
     if (Constructor.super_) Constructor.super_.call(o, incoming);
 
     // Apply decorators.
     decorators.forEach(function (decorator) {
       decorator.call(o, overwritten || merged || incoming, protect);
     });
-
+    // The object has been created and decorated.  Done!
     return o;
   };
 
@@ -82,8 +82,7 @@ var deco = module.exports = function deco () {
     defaults = deco.merge(defaults, incoming);
   };
 
-  Constructor.inherit = function (super_, useNew) {
-    internal.useNew = useNew ? true : false;
+  Constructor.inherit = function (super_) {
     util.inherits(Constructor, super_);
   };
 

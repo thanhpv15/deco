@@ -1,4 +1,5 @@
 var expect = require('expect.js');
+var express = require('express');
 var deco = require('..');
 
 describe('deco', function () {
@@ -143,18 +144,29 @@ describe('deco', function () {
     expect(o).to.be.a(constructor);
   });
 
-  it('should allow inheriting, forcing use of `new` keyword', function () {
+  it('should allow inheriting from Error', function () {
     var constructor = deco(function (message) { this.message = message });
     var message = 'Test error message.';
     var o;
 
-    constructor.inherit(Error, true);
+    constructor.inherit(Error);
 
     o = constructor(message);
     expect(o).to.be.an(Object);
     expect(o).to.be.an(Error);
     expect(o).to.be.a(constructor);
     expect(o).to.have.property('message', message);
+  });
+
+  it('should allow decorating an existing object (i.e. Express)', function () {
+    var constructor = deco();
+    var o = constructor.call(express());
+
+    expect(o).to.be.an(Object);
+    expect(o).not.to.be.an(express); // `express` doesn't set this up, other constructors may well
+    expect(o).not.to.be.a(constructor); // decorating an existing object
+    expect(o).to.have.property('set');
+    expect(o.set).to.be.a(Function);
   });
 
   it('should allow constructors to act as decorators', function () {

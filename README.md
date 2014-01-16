@@ -23,7 +23,7 @@ The main functionality is provided by the `deco()` function.  It builds construc
 
 Inheritence can be achieved by the `inherits` constructor method.  For example to build an express app with the constructor:
 
-    Constructor.inherits(require('express'));
+    Constructor.inherits(Parent);
 
 To provide a constructor with decorators, use the `decorators` constructor method.
 
@@ -64,9 +64,14 @@ Or to only load specific files:
 
     Composed = deco(__dirname, [ 'decorator1', 'decorator2' ]);
 
-Deco.js constructors are themselves decorators!
+Deco.js constructors are themselves decorators!  Use them to group decorators for use in other constructors, or call them directly on existing objects.
 
     var AnotherConstructor = deco([ Composed, function () { /* ... */ }]);
+
+    // also
+
+    var app = express();
+    Composed.call(app);
 
 Protected instance members are passed into your decorators by deco.  Each constructed object has internal access to protected data, but it is hidden from outside code.
 
