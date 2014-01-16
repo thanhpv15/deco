@@ -60,14 +60,14 @@ var deco = module.exports = function deco () {
     // the object that is being decorated is already created. (It will be set to
     // `global` if not, thus creating the danger associated with the `new`
     // keyword, and its accidental omission.)
-    if (this !== global) o = this;
+    if (this !== global && this !== internal.container) o = this;
     // If it hasn't been set yet, check for a factory function.
     else if (internal.factory) o = internal.factory(); // TODO constructor options
     // Otherwise, construct the object to be decorated.
     else o = Object.create(Constructor.prototype);
 
     // If the constructor inherits, call the super constructor on the object
-    // to be decorated.
+    // to be decorated. // TODO this doesn't work for Error, does it work in general?
     if (Constructor.super_) Constructor.super_.call(o, incoming);
 
     // Apply decorators.
@@ -92,6 +92,10 @@ var deco = module.exports = function deco () {
 
   Constructor.factory = function (factory) {
     internal.factory = factory;
+  };
+
+  Constructor.container = function (container) {
+    internal.container = container;
   };
 
   return Constructor;

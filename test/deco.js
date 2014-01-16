@@ -158,6 +158,24 @@ describe('deco', function () {
     expect(o).to.have.property('message', message);
   });
 
+
+  it('should allow calling a constructor not as a method', function () {
+    var container = {
+      constructor: deco(function (message) { this.message = message })
+    };
+    var message = 'Test error message.';
+    var o;
+
+    container.constructor.inherit(Error);
+    container.constructor.container(container);
+
+    o = container.constructor(message);
+    expect(o).to.be.an(Object);
+    expect(o).to.be.an(Error);
+    expect(o).to.be.a(constructor);
+    expect(o).to.have.property('message', message);
+  });
+
   it('should allow decorating an existing object (i.e. Express)', function () {
     var constructor = deco();
     var o;
@@ -262,5 +280,6 @@ describe('deco', function () {
 
   it('should allow any number of arguments for the initial constructor or factory');
   it('should not allow inheriting and using a factory at the same time');
+  it('should call the super constructor for inherited objects');
 
 });
