@@ -281,5 +281,6 @@ describe('deco', function () {
   it('should allow any number of arguments for the initial constructor or factory');
   it('should not allow inheriting and using a factory at the same time');
   it('should call the super constructor for inherited objects');
+  it('should pass arguments through unmodified where approrpaite e.g. inheriting Error sends undefined as first argument which bombs');
 
 });

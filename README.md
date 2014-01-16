@@ -21,9 +21,9 @@ The main functionality is provided by the `deco()` function.  It builds construc
     var Constructor = deco();
     var o = Constructor();
 
-Inheritence can be achieved by the `inherits` constructor method.  For example to build an express app with the constructor:
+Inheritence can be achieved by the `inherit` constructor method.  This is shorthand for the built-in `util.inherits(Constructor, super_)`.  The super constructor will be called on the object before decoration.
 
-    Constructor.inherits(Parent);
+    Constructor.inherit(Parent);
 
 To provide a constructor with decorators, use the `decorators` constructor method.
 
@@ -73,11 +73,11 @@ Deco.js constructors are themselves decorators!  Use them to group decorators fo
     var app = express();
     Composed.call(app);
 
-You can have constructors use a factory method, instead of usig inheritence.
+You can have constructors use a factory method, instead of using inheritence.
 
     var ExpressConstructor = deco();
     ExpressConstructor.factory = express;
-    // now `ExpressConstructor()` will create an object to be decorated by
+    // now `ExpressConstructor()` will create the object to be decorated by
     // calling `express()`.
 
 If you are using a constructor as a property of another object, it will be interpreted as a method call and pass the containing object in as `this`.  Deco will handle this situation if you designate the container.

@@ -67,7 +67,7 @@ var deco = module.exports = function deco () {
     else o = Object.create(Constructor.prototype);
 
     // If the constructor inherits, call the super constructor on the object
-    // to be decorated. // TODO this doesn't work for Error, does it work in general?
+    // to be decorated. // TODO this doesn't work for Error (in a weird way), does it work in general?
     if (Constructor.super_) Constructor.super_.call(o, incoming);
 
     // Apply decorators.
