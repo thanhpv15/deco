@@ -166,15 +166,15 @@ describe('deco', function () {
   });
 
   it('should allow inheriting, forcing use of `new` keyword', function () {
-    var Parent = function Parent () {};
     var constructor = deco();
+    var message = 'Test error message.';
     var o;
 
-    constructor.inherit(Parent, true);
-    o = constructor();
+    constructor.inherit(Error, true);
+    o = constructor(message);
 
-    expect(o instanceof Parent).to.be(true);
-    expect(Parent.isPrototypeOf(o)).to.be(false);
+    expect(o).to.be.an(Error);
+    expect(o).to.have.property('message', message);
   });
 
   it('should allow constructors to act as decorators', function () {
@@ -263,5 +263,7 @@ describe('deco', function () {
 
     constructor();
   });
+
+  it('should allow any number of arguments for the initial constructor');
 
 });

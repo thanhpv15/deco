@@ -33,6 +33,7 @@ var deco = module.exports = function deco () {
   var internal = {};
 
   // Protect is protected instance data
+  // TODO always make protect last, so that vairable number of arguments are allowed for initial Constructor call
   var Constructor = function (incoming, protect) {
     var o;
     var merged;
@@ -41,8 +42,8 @@ var deco = module.exports = function deco () {
     // Default protected instance values.
     if (!protect) {
       protect = {
-        options: function (incoming) {
-          overwritten = deco.merge(overwritten || defaults, incoming);
+        options: function (newOptions) {
+          overwritten = deco.merge(overwritten || defaults, newOptions);
         }
       };
     }
@@ -59,8 +60,8 @@ var deco = module.exports = function deco () {
     // constructor inherits, create the object to be decorated by calling the
     // inherited constructor.
     else if (Constructor.super_) {
-      if (internal.useNew) o = new Constructor.super_();
-      else o = Constructor.super_();
+      if (internal.useNew) o = new Constructor.super_(incoming); // TODO call with all arguments
+      else o = Constructor.super_(incoming);
     }
     // If the constructor doesn't inherit, create a vanilla object to be decorated.
     else o = {};
