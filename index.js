@@ -29,6 +29,8 @@ var deco = module.exports = function deco () {
   var decorators = parse(arguments);
   // Default constructor hash.
   var defaults = {};
+  // Internal private data.
+  var internal = {};
 
   // Protect is protected instance data
   // TODO always make protect last, so that vairable number of arguments are allowed for initial Constructor call
@@ -59,7 +61,9 @@ var deco = module.exports = function deco () {
     // `global` if not, thus creating the danger associated with the `new`
     // keyword, and its accidental omission.)
     if (this !== global) o = this;
-    // If it hasn't been set yet, construct an object before applying decorators.
+    // If it hasn't been set yet, check for a factory function.
+    else if (internal.factory) o = internal.factory(); // TODO constructor options
+    // Otherwise, construct the object to be decorated.
     else o = Object.create(Constructor.prototype);
 
     // If the constructor inherits, call the super constructor on the object
@@ -84,6 +88,10 @@ var deco = module.exports = function deco () {
 
   Constructor.inherit = function (super_) {
     util.inherits(Constructor, super_);
+  };
+
+  Constructor.factory = function (factory) {
+    internal.factory = factory;
   };
 
   return Constructor;

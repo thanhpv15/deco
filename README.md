@@ -73,6 +73,13 @@ Deco.js constructors are themselves decorators!  Use them to group decorators fo
     var app = express();
     Composed.call(app);
 
+You can have constructors use a factory method, instead of usig inheritence.
+
+    var ExpressConstructor = deco();
+    ExpressConstructor.factory = express;
+    // now `ExpressConstructor()` will create an object to be decorated by
+    // calling `express()`.
+
 Protected instance members are passed into your decorators by deco.  Each constructed object has internal access to protected data, but it is hidden from outside code.
 
     var Bee = deco(function (options, protect) {

@@ -160,8 +160,11 @@ describe('deco', function () {
 
   it('should allow decorating an existing object (i.e. Express)', function () {
     var constructor = deco();
-    var o = constructor.call(express());
+    var o;
 
+    constructor.factory(express);
+
+    o = constructor();
     expect(o).to.be.an(Object);
     expect(o).not.to.be.an(express); // `express` doesn't set this up, other constructors may well
     expect(o).not.to.be.a(constructor); // decorating an existing object
@@ -176,6 +179,8 @@ describe('deco', function () {
 
     expect(constructor1).to.be.a(Function);
     expect(constructor2).to.be.a(Function);
+    expect(o).not.to.be.a(constructor1);
+    expect(o).to.be.a(constructor2);
     expect(o).to.have.property('artist', 'busy signal');
     expect(o).to.have.property('genre', 'reggae');
   });
@@ -255,6 +260,7 @@ describe('deco', function () {
     constructor();
   });
 
-  it('should allow any number of arguments for the initial constructor');
+  it('should allow any number of arguments for the initial constructor or factory');
+  it('should not allow inheriting and using a factory at the same time');
 
 });
