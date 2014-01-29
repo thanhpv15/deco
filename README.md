@@ -51,10 +51,15 @@ Deco.js provides a better way to provide default constructor options.
       hops: 'Nugget'
     });
 
+    Ale.decorators(function (options) {
+      // When `stout` is being created:
+      // `options.created` will be set to the current date.
+      // `options.yeast` will be set to "Nottingham."
+      // `options.hops` will have the default value of "Nugget."
+    });
+
     var stout = Ale({ yeast: 'Nottingham' });
-    // `stout.created` was set to the current date.
-    // `stout.yeast` was set to "Nottingham."
-    // `stout.hops` has the default value of "Nugget."
+
 
 Load a directory of decorator files into a constructor by sending in a path.
 
@@ -78,13 +83,15 @@ You can have constructors use a factory method, instead of using inheritence.
     var ExpressConstructor = deco();
     ExpressConstructor.factory = express;
     // now `ExpressConstructor()` will create the object to be decorated by
-    // calling `express()`.
+    // calling the factory function e.g. `express()`.
 
-If you are using a constructor as a property of another object, it will be interpreted as a method call and pass the containing object in as `this`.  Deco will handle this situation if you designate the container.
+If you are setting a constructor as a property of another object, it will be interpreted as a method call and the runtime will pass the containing object in as `this`.  Deco will handle this situation for you if you designate the container.
 
     var collected = { Constructor1: deco(), Constructor2: deco() };
     collected.Constructor1.container(collected);
     collected.Constructor2.container(collected);
+
+    var o = collected.Contructor1();
 
 Protected instance members are passed into your decorators by deco.  Each constructed object has internal access to protected data, but it is hidden from outside code.
 
