@@ -23,7 +23,7 @@ The main functionality is provided by the `deco()` function.  It builds construc
 
 Inheritence can be achieved by the `inherit` constructor method.  This is shorthand for the built-in `util.inherits(Constructor, super_)`.  The super constructor will be called on the object before decoration.
 
-    Constructor.inherit(Parent);
+    Constructor.inherit(super_);
 
 To provide a constructor with decorators, use the `decorators` constructor method.
 
