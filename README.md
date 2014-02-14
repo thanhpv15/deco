@@ -102,6 +102,10 @@ Protected instance members are passed into your decorators by deco.  Each constr
     Bee.decorators(function (options, protect) {
       if (protect.poisoned) this.behavior = 'erratic';
     });
+    
+    var b = Bee();
+    // `b.behavior` is set to "erratic."
+    // `protect.poisoned` is not accessible in this scope, only to other decorators.
 
 To overwrite constructor options, use the protected `options` instance method.  The altered options will be merged with the constructor's defaults.
 
