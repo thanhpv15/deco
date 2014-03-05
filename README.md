@@ -53,7 +53,6 @@ Deco.js provides a better way to provide default constructor options.
 
     Ale.decorators(function (options) {
       // When `stout` is being created:
-      // `options.created` will be set to the current date.
       // `options.yeast` will be set to "Nottingham."
       // `options.hops` will have the default value of "Nugget."
     });
