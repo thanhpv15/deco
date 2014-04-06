@@ -23,7 +23,7 @@ The main functionality is provided by the `deco()` function.  It builds construc
 
 Inheritence can be achieved by the `inherit` constructor method.  This is shorthand for the built-in `util.inherits(Constructor, super_)`.  The super constructor will be called on the object before decoration.
 
-    Constructor.inherit(Parent);
+    Constructor.inherit(super_);
 
 To provide a constructor with decorators, use the `decorators` constructor method.
 
@@ -53,7 +53,6 @@ Deco.js provides a better way to provide default constructor options.
 
     Ale.decorators(function (options) {
       // When `stout` is being created:
-      // `options.created` will be set to the current date.
       // `options.yeast` will be set to "Nottingham."
       // `options.hops` will have the default value of "Nugget."
     });
@@ -78,11 +77,11 @@ Deco.js constructors are themselves decorators!  Use them to group decorators fo
     var app = express();
     Composed.call(app);
 
-You can have constructors use a factory method, instead of using inheritence.
+You can have constructors use a factory method, instead of using prototypal inheritence.
 
     var ExpressConstructor = deco();
     ExpressConstructor.factory = express;
-    // now `ExpressConstructor()` will create the object to be decorated by
+    // `ExpressConstructor()` will create the object to be decorated by
     // calling the factory function e.g. `express()`.
 
 If you are setting a constructor as a property of another object, it will be interpreted as a method call and the runtime will pass the containing object in as `this`.  Deco will handle this situation for you if you designate the container.
@@ -102,6 +101,10 @@ Protected instance members are passed into your decorators by deco.  Each constr
     Bee.decorators(function (options, protect) {
       if (protect.poisoned) this.behavior = 'erratic';
     });
+    
+    var b = Bee();
+    // `b.behavior` is set to "erratic."
+    // `protect.poisoned` is not accessible in this scope, only to decorators.
 
 To overwrite constructor options, use the protected `options` instance method.  The altered options will be merged with the constructor's defaults.
 
