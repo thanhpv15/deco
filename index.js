@@ -80,22 +80,27 @@ var deco = module.exports = function deco () {
 
   Constructor.decorators = function () {
     decorators = decorators.concat(parse(arguments));
+    return Constructor;
   };
 
   Constructor.defaults = function (incoming) {
     defaults = deco.merge(defaults, incoming);
+    return Constructor;
   };
 
   Constructor.inherit = function (super_) {
     util.inherits(Constructor, super_);
+    return Constructor;
   };
 
   Constructor.factory = function (factory) {
     internal.factory = factory;
+    return Constructor;
   };
 
   Constructor.container = function (container) {
     internal.container = container;
+    return Constructor;
   };
 
   return Constructor;
