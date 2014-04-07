@@ -1,10 +1,14 @@
 {
   "name": "deco",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Compose modular decorators to build constructors.  Your Node.js code will never have been as organized, reusable, and pluggable.",
   "main": "index.js",
   "scripts": {
     "test": "mocha --bail --timeout 5000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wprl/deco.git"
   },
   "repository": "",
   "keywords": [
