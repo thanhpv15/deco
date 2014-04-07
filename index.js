@@ -1,8 +1,10 @@
 // __Dependencies__
+
 var util = require('util');
 var requireindex = require('requireindex');
 
 // __Private Module Members__
+
 function getValue (key) { return this[key] }
 function isNotFunction (value) { return typeof value !== 'function' }
 
