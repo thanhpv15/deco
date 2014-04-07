@@ -1,5 +1,6 @@
 var expect = require('expect.js');
 var express = require('express');
+var util = require('util');
 var deco = require('..');
 
 describe('deco', function () {
@@ -278,7 +279,21 @@ describe('deco', function () {
     constructor();
   });
 
-  it('should allow any number of arguments for the initial constructor or factory');
+  it('should allow any number of arguments for the initial constructor call', function () {
+    var constructor = deco().sanitize(function () {
+      return util.format.apply(util, arguments);
+    });
+
+    constructor.decorators(function (options, protect) {
+      expect(options).to.eql('foo ! bar');
+      expect(protect).not.to.eql(null);
+      expect(protect).to.have.property('options');
+    });
+
+    constructor('%s ! %s', 'foo', 'bar');
+  });
+
+  it('should allow any number of arguments for the initial factory call');
   it('should not allow inheriting and using a factory at the same time');
   it('should call the super constructor for inherited objects');
   it('should pass arguments through unmodified where approrpaite e.g. inheriting Error sends undefined as first argument which bombs');

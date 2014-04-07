@@ -35,7 +35,6 @@ var deco = module.exports = function deco () {
   var internal = {};
 
   // Protect is protected instance data
-  // TODO always make protect last, so that vairable number of arguments are allowed for initial Constructor call
   var Constructor = function (incoming, protect) {
     // The object to be decorated.
     var o;
@@ -43,6 +42,22 @@ var deco = module.exports = function deco () {
     var merged;
     // Constructor options that have been overwritten by a decorator.
     var overwritten;
+
+    // If `this`, the object to be decorated, has already been set it means
+    // the object that is being decorated is already created. (It will be set to
+    // `global` if not, thus creating the danger associated with the `new`
+    // keyword, and its accidental omission.)
+    if (this !== global && this !== internal.container) o = this;
+    // If it hasn't been set yet, check for a factory function.
+    else if (internal.factory) o = internal.factory(arguments);
+    // Otherwise, construct the object to be decorated.
+    else o = Object.create(Constructor.prototype);
+
+    // Allow clean up of arguments, so that initial constructor call can be anything.
+    if (internal.sanitize) {
+      incoming = internal.sanitize.apply(undefined, arguments);
+      protect = undefined;
+    }
 
     // Default protected instance values.
     if (!protect) {
@@ -58,18 +73,8 @@ var deco = module.exports = function deco () {
     // Merge the incoming options with any defaults, if they're a hash.
     if (typeof incoming === 'object') merged = deco.merge(defaults, incoming);
 
-    // If `this`, the object to be decorated, has already been set it means
-    // the object that is being decorated is already created. (It will be set to
-    // `global` if not, thus creating the danger associated with the `new`
-    // keyword, and its accidental omission.)
-    if (this !== global && this !== internal.container) o = this;
-    // If it hasn't been set yet, check for a factory function.
-    else if (internal.factory) o = internal.factory(); // TODO constructor options
-    // Otherwise, construct the object to be decorated.
-    else o = Object.create(Constructor.prototype);
-
     // If the constructor inherits, call the super constructor on the object
-    // to be decorated. // TODO this doesn't work for Error (in a weird way), does it work in general?
+    // to be decorated.
     if (Constructor.super_) Constructor.super_.call(o, incoming);
 
     // Apply decorators.
@@ -78,6 +83,11 @@ var deco = module.exports = function deco () {
     });
     // The object has been created and decorated.  Done!
     return o;
+  };
+
+  Constructor.sanitize = function (f) {
+    internal.sanitize = f;
+    return Constructor;
   };
 
   Constructor.decorators = function () {
