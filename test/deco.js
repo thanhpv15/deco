@@ -293,6 +293,54 @@ describe('deco', function () {
     constructor('%s ! %s', 'foo', 'bar');
   });
 
+  it('should allow adding a property', function (done) {
+    var constructor = deco(function (option, protect) {
+      protect.property('channels');
+    });
+    var o = constructor();
+    expect(o.channels()).to.be(undefined);
+    done();
+  });
+
+  it('should allow setting a property', function (done) {
+    var constructor = deco(function (option, protect) {
+      protect.property('panels', true);
+    });
+    var o = constructor();
+    expect(o.panels()).to.be(true);
+    o.panels(undefined);
+    expect(o.channels()).to.be(undefined);
+    o.panels(false);
+    expect(o.channels()).to.be(false);
+    done();
+  });
+
+  it('should allow adding a multiproperty', function (done) {
+    var constructor = deco(function (options, protect) {
+      protect.multiproperty('flannels', false);
+    });
+    var o = constructor;
+    expect(o.flannels('plaid')).to.be(false);
+    expect(o.flannels('rad')).to.be(false);
+    done();
+  });
+
+  it('should allow setting a multiproperty', function (done) {
+    var constructor = deco(function (options, protect) {
+      protect.multiproperty('bundles', 'lively');
+    });
+    var o = constructor;
+    expect(o.bundles('one')).to.be('lively');
+    expect(o.bundles('   one two    three   ', 'tubular')).to.be(o);
+    expect(o.bundles('one')).to.be('tubular');
+    expect(o.bundles('two')).to.be('tubular');
+    expect(o.bundles('three')).to.be('tubular');
+    expect(o.bundles('one', false)).to.be(o);
+    expect(o.bundles('one')).to.be(false);
+    expect(o.bundles()).to.eql([ 'two', 'three' ]);
+    done();
+  });
+
   it('should allow any number of arguments for the initial factory call');
   it('should not allow inheriting and using a factory at the same time');
   it('should call the super constructor for inherited objects');
