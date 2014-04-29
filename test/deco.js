@@ -309,9 +309,9 @@ describe('deco', function () {
     var o = constructor();
     expect(o.panels()).to.be(true);
     o.panels(undefined);
-    expect(o.channels()).to.be(undefined);
+    expect(o.panels()).to.be(true);
     o.panels(false);
-    expect(o.channels()).to.be(false);
+    expect(o.panels()).to.be(false);
     done();
   });
 
@@ -319,7 +319,7 @@ describe('deco', function () {
     var constructor = deco(function (options, protect) {
       protect.multiproperty('flannels', false);
     });
-    var o = constructor;
+    var o = constructor();
     expect(o.flannels('plaid')).to.be(false);
     expect(o.flannels('rad')).to.be(false);
     done();
@@ -329,7 +329,7 @@ describe('deco', function () {
     var constructor = deco(function (options, protect) {
       protect.multiproperty('bundles', 'lively');
     });
-    var o = constructor;
+    var o = constructor();
     expect(o.bundles('one')).to.be('lively');
     expect(o.bundles('   one two    three   ', 'tubular')).to.be(o);
     expect(o.bundles('one')).to.be('tubular');

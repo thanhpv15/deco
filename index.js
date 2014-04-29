@@ -101,7 +101,7 @@ var deco = module.exports = function deco () {
               return r;
             }
             function setter () {
-              items.split(/\s+/g).forEach(function (item) {
+              items.split(/\s+/g).filter(function (v) { return v }).forEach(function (item) {
                 store[item] = action ? action(cargo) : cargo;
               });
               return o;
