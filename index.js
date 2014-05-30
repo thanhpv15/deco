@@ -89,10 +89,13 @@ var deco = module.exports = function deco () {
         // o.name('a b c', val) -> store[a,b,c] = val;
         // o.name('a') -> store[a];
         // o.name() -> ['a', 'b']; // active ones
-        multiproperty: function (name, initial, action) {
+        multiproperty: function (name, keys, initial, action) {
           var store = multi[name] = {};
+          if (o[name]) {
+            throw new Error('A property with the name "' + name + "' was already added to this object.")
+          }
           // Add the property to the controller.
-          o[name] = function (items, cargo) {
+          var f = o[name] = function (items, cargo) {
             // get the stores value
             function getter (key) {
               if (key.match(/\s/)) throw new Error('Can only specify one item when getting');
@@ -114,6 +117,7 @@ var deco = module.exports = function deco () {
             else return Object.keys(store).filter(getter);
           };
 
+          if (keys) f(keys, initial);
           return o;
         }
       };

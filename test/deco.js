@@ -317,7 +317,7 @@ describe('deco', function () {
 
   it('should allow adding a multiproperty', function (done) {
     var constructor = deco(function (options, protect) {
-      protect.multiproperty('flannels', false);
+      protect.multiproperty('flannels', null, false);
     });
     var o = constructor();
     expect(o.flannels('plaid')).to.be(false);
@@ -327,7 +327,7 @@ describe('deco', function () {
 
   it('should allow setting a multiproperty', function (done) {
     var constructor = deco(function (options, protect) {
-      protect.multiproperty('bundles', 'lively');
+      protect.multiproperty('bundles', undefined, 'lively');
     });
     var o = constructor();
     expect(o.bundles('one')).to.be('lively');
@@ -338,6 +338,19 @@ describe('deco', function () {
     expect(o.bundles('one', false)).to.be(o);
     expect(o.bundles('one')).to.be(false);
     expect(o.bundles()).to.eql([ 'two', 'three' ]);
+    done();
+  });
+
+  it('should set defaults for a multiproperty', function (done) {
+    var constructor = deco(function (options, protect) {
+      protect.multiproperty('bundles', 'head get put post delete', true, function (v) {
+        return v ? true : false;
+      });
+    });
+    var o = constructor();
+    expect(o.bundles()).to.eql([ 'head', 'get', 'put', 'post', 'delete' ]);
+    o.bundles('head get put post', false);
+    expect(o.bundles()).to.eql([ 'delete' ]);
     done();
   });
 
