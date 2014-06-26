@@ -1,4 +1,4 @@
-deco.js
+![deco.js](./deco.jpeg "deco.js")
 =======
 Compose modular decorators to build constructors.  You're Node.js code will never have been as organized, reusable, and pluggable.
 
