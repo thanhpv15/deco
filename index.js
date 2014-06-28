@@ -173,6 +173,7 @@ var deco = module.exports = function deco () {
 // __Public Module Members__
 
 deco.merge = function (defaults, incoming) {
+  // TODO make this except 0 or more arguments.
   var keys;
   var merged = {};
 
