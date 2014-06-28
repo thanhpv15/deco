@@ -1,4 +1,4 @@
-![deco.js](https://github.com/wprl/deco/blob/master/deco.jpeg "deco.js")
+![deco.js](https://raw.githubusercontent.com/wprl/deco/master/deco.jpeg "deco.js")
 =======
 Compose modular decorators to build constructors.  You're Node.js code will never have been as organized, reusable, and pluggable.
 
@@ -101,7 +101,7 @@ Protected instance members are passed into your decorators by deco.  Each constr
     Bee.decorators(function (options, protect) {
       if (protect.poisoned) this.behavior = 'erratic';
     });
-    
+
     var b = Bee();
     // `b.behavior` is set to "erratic."
     // `protect.poisoned` is not accessible in this scope, only to decorators.
