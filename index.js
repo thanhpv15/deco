@@ -1,209 +1,219 @@
-// __Dependencies__
-var util = require('util');
-var requireindex = require('requireindex');
-// __Private Module Members__
-function getValue (key) { return this[key] }
-function isNotFunction (value) { return typeof value !== 'function' }
-// Parse the deco function arguments.
-function parse (args) {
-  var incoming = args[0];
-  var decorators;
-  // Parse.
-  if (!incoming) decorators = [];
-  else if (Array.isArray(incoming)) decorators = [].concat(incoming);
-  else if (typeof incoming === 'function') decorators = [].concat(incoming);
-  else if (typeof incoming === 'string') decorators = deco.require.apply(deco, args);
-  else throw new Error('Indecipherable arguments.');
-  // Validate.
-  if (decorators.some(isNotFunction)) throw new Error('Encountered non-function decorator.');
+'use strict';
 
-  return decorators;
-}
-// __Module Definition__
-var deco = module.exports = function deco () {
-  // Decorators to be applied to each newly constructed object.
-  var decorators = parse(arguments);
-  // Default constructor hash.
-  var defaults = {};
-  // Internal private data.
-  var internal = {};
-  // Protect is protected instance data
-  var Constructor = function (incoming, protect) {
-    // The object to be decorated.
-    var o;
-    // Incoming constructor options merged with defaults.
-    var merged;
-    // Constructor options that have been overwritten by a decorator.
-    var overwritten;
-    // Store values of properties.
-    var properties = {};
-    // Store values of multiproperties.
-    var multi = {};
-    // If `this`, the object to be decorated, has already been set it means
-    // the object that is being decorated is already created. (It will be set to
-    // `global` if not, thus creating the danger associated with the `new`
-    // keyword, and its accidental omission.)
-    if (this !== global && this !== internal.container) o = this;
-    // If it hasn't been set yet, check for a factory function.
-    else if (internal.factory) o = internal.factory(arguments);
-    // Otherwise, construct the object to be decorated.
-    else o = Object.create(Constructor.prototype);
-    // Allow clean up of arguments, so that initial constructor call can be anything.
-    if (internal.sanitize) {
-      incoming = internal.sanitize.apply(undefined, arguments);
-      protect = undefined;
-    }
-    // Default protected instance values.
-    if (!protect) {
-      protect = {
-        options: function (newOptions) {
-          overwritten = deco.merge(overwritten || defaults, newOptions);
-        },
-        property: function (name, initial, f) {
-          function getter () {
-            // Getter with transform.
-            if (typeof initial === 'function') {
-              return initial.bind(o)(properties[name]);
-            }
-            // Vanilla getter.
-            return properties[name] === undefined ? initial : properties[name];
-          }
-          function setter (value) {
-            if (f) properties[name] = f.bind(o)(value);
-            else properties[name] = value;
-            return o;
-          }
-          // Can't redefine properties.
-          if (o[name]) {
-            throw new Error('A property with the name "' + name + "' was already added to this object.")
-          }
-          // Set the initial value.
-          if (typeof initial !== 'function') properties[name] = initial;
-          // Define the property.
-          o[name] = function (value) {
-            if (arguments.length === 1) return setter(value);
-            return getter();
-          };
-        },
+// # Deco 2
 
-        // o.name('a b c', val) -> store[a,b,c] = val;
-        // o.name('a') -> store[a];
-        // o.name() -> ['a', 'b']; // active ones
-        multiproperty: function (name, keys, initial, action) {
-          var store = multi[name] = {};
-          if (o[name]) {
-            throw new Error('A property with the name "' + name + "' was already added to this object.")
-          }
-          // Add the property to the controller.
-          var f = o[name] = function (items, cargo) {
-            // get the stores value
-            function getter (key) {
-              if (key.match(/\s/)) throw new Error('Can only specify one item when getting');
-              var r = store[key];
-              if (r === undefined) return initial;
-              return r;
-            }
-            function setter () {
-              items.split(/\s+/g).filter(function (v) { return v }).forEach(function (item) {
-                store[item] = action ? action(cargo) : cargo;
-              });
-              return o;
-            }
-            // If one argument was passed, return the value for that item.
-            if (arguments.length === 1) return getter(items);
-            // If two arguments were passed, update the items with the cargo.
-            else if (arguments.length === 2) return setter();
-            // Otherwise, return a list of defined items.
-            else return Object.keys(store).filter(getter);
-          };
+// A pollyfill to add Object.getOwnPropertyDescriptors.
+require('ecma-proposal-object.getownpropertydescriptors');
 
-          if (keys) f(keys, initial);
-          return o;
-        }
-      };
-    }
-    // Initialize the incoming constructor options, if necessary.
-    if (incoming === undefined || incoming === null) incoming = {};
-    // Merge the incoming options with any defaults, if they're a hash.
-    if (typeof incoming === 'object') merged = deco.merge(defaults, incoming);
-    // If the constructor inherits, call the super constructor on the object
-    // to be decorated.
-    if (Constructor.super_) Constructor.super_.call(o, incoming);
-    // Apply decorators.
-    decorators.forEach(function (decorator) {
-      decorator.call(o, overwritten || merged || incoming, protect);
+const Bursary = require('bursary');
+const RequireIndex = require('requireindex');
+
+// ## Private Members
+// A function that assigns/merges a series of objects.  It copies
+// property definitions, not just values.
+const assign = (o, ...updates) => {
+  for (const update of updates.filter(identity)) {
+    const d = descriptors(update);
+    Reflect.deleteProperty(d, 'constructor');
+    Reflect.deleteProperty(d, 'prototype');
+    Object.defineProperties(o, d);
+  }
+
+  return o;
+};
+// Make shallow copy of an object or array and merge additional arguments.
+const copy = (...a) => assign({}, ...a);
+const descriptors = (o) => Object.getOwnPropertyDescriptors(o);
+const hasOwnProperty = (o, name) =>
+  Reflect.apply(Reflect.hasOwnProperty, o, [ name ]);
+const identity = (a) => a;
+const isClass = (a) => {
+  if (!isFunction(a)) return false;
+  if (Reflect.ownKeys(a).includes('arguments')) return false;
+  if (!Reflect.ownKeys(a).includes('prototype')) return false;
+  return true;
+};
+const isDeco = (a) => a instanceof Deco;
+const isFunction = (a) => a instanceof Function;
+const isUndefined = (a) => a === undefined;
+// constructorsByFactory stores the initialization methods for each factory
+//   function created with Deco.
+// defaultsByFactory stores the default constructor options for each
+//   factory function created with Deco.
+// stateByInstance stores the private internal state for each object created
+//   by a Deco factory.
+const secrets = Bursary({
+  constructorsByFactory: Array,
+  defaultsByFactory: Object,
+  stateByInstance: Object
+});
+// Static members for the created constructors.
+const statics = {
+  // Use assignment based inheritence to mix in members from objects, vanilla
+  // JavaScript constructors, and/or Deco mixins.
+  concatenate (...mixins) {
+    assign(this.prototype, ...mixins.map((mixin) => {
+      return isFunction(mixin) ? mixin.prototype : mixin;
+    }));
+
+    this.mergeConstructors(...mixins.map((mixin) => {
+      if (hasOwnProperty(mixin, 'constructor')) return mixin.constructor;
+      if (isDeco(mixin)) return mixin.prototype.constructor;
+      if (isFunction(mixin) && !isClass(mixin)) {
+        if (!mixin.prototype) return mixin;
+        return mixin.prototype.constructor;
+      }
+      if (isClass(mixin)) {
+        return function (...parameters) {
+          const o = Reflect.construct(mixin, parameters);
+          assign(this, o);
+          return this;
+        };
+      }
+      return;
+    }));
+
+    this.defaults(...mixins.map((mixin) =>
+      isDeco(mixin) ? mixin.defaults() : mixin.defaults));
+
+    return this;
+  },
+  // Defaults that will be merged with constructor options passed in by the
+  // end user of the factory.
+  defaults (...updates) {
+    const defaults = secrets.defaultsByFactory(this);
+    assign(defaults, ...updates);
+    if (!Object.keys(defaults).length) return;
+    return copy(defaults);
+  },
+  // Inject prototypal inheritence.
+  inherit (C) {
+    // TODO // check C.prototype exists, throw if not
+    this.prototype.prototype = Object.create(C.prototype);
+    this.mergeConstructors(C.prototype.constructor);
+    Reflect.setPrototypeOf(this.prototype, this.prototype.prototype);
+    return this;
+  },
+  initializeConstructor () {
+    // TODO // check not already called
+    const constructors = secrets.constructorsByFactory(this);
+    // The factory's constructor.  This function aggregates all
+    // concatenated constructors.
+    const factoryConstructor = function factoryConstructor (...parameters) {
+      return constructors.reduce((o, ƒ) => {
+        const next = Reflect.apply(ƒ, o, parameters);
+        if (isUndefined(next)) return o;
+        return next;
+      }, this);
+    };
+
+    // Set up the prototype for the factory.
+    this.prototype = Object.create(Deco.prototype);
+    Reflect.defineProperty(this.prototype, 'constructor', {
+      configurable: true,
+      enumerable: false,
+      value: factoryConstructor,
+      writable: true
     });
-    // The object has been created and decorated.  Done!
-    return o;
-  };
+    Reflect.setPrototypeOf(this, this.prototype);
+    return this;
+  },
+  // Load and apply mixins from a directory.
+  load (directory, ...files) {
+    const MixinByName = RequireIndex(directory, ...files);
+    const mixins = Object.keys(MixinByName).map((name) => MixinByName[name]);
+    this.concatenate(...mixins);
+    return this;
+  },
+  // Constructors that will be applied sequentially to newly created instances.
+  mergeConstructors (...updates) {
+    const constructors = secrets.constructorsByFactory(this);
+    constructors.push(...updates.filter(identity));
+    return this;
+  },
+  // Add a property with hidden state to the factory prototype.
+  property (name, initial, ƒ) {
+    Reflect.defineProperty(this.prototype, name, {
+      get () {
+        const state = secrets.stateByInstance(this);
+        const a = state[name];
+        return isUndefined(a) ? initial : a;
+      },
+      set (a) {
+        const state = secrets.stateByInstance(this);
+        if (ƒ) state[name] = Reflect.apply(ƒ, this, [ a, state[name] ]);
+        else state[name] = a;
+        return this[name];
+      }
+    });
 
-  Constructor.sanitize = function (f) {
-    internal.sanitize = f;
-    return Constructor;
-  };
+    return this;
+  }
+};
+const trim = (strings) => {
+  const lines = strings.raw[0].split('\n');
+  const trimmed = lines.map((s) => s.trim());
 
-  Constructor.decorators = function () {
-    decorators = decorators.concat(parse(arguments));
-    return Constructor;
-  };
-
-  Constructor.defaults = function (incoming) {
-    defaults = deco.merge(defaults, incoming);
-    return Constructor;
-  };
-
-  Constructor.inherit = function (super_) {
-    util.inherits(Constructor, super_);
-    return Constructor;
-  };
-
-  Constructor.factory = function (factory) {
-    internal.factory = factory;
-    return Constructor;
-  };
-
-  Constructor.container = function (container) {
-    internal.container = container;
-    return Constructor;
-  };
-
-  return Constructor;
+  const notEmpty = trimmed.filter(identity);
+  return notEmpty.join('\n');
 };
 
-// __Public Module Members__
+/*
 
-deco.merge = function (defaults, incoming) {
-  // TODO make this except 0 or more arguments.
-  var keys;
-  var merged = {};
+   ## Module Definition
 
-  if (!defaults) defaults = {};
-  if (!incoming) incoming = {};
+   A function used to create factory functions (*classes*) by mixing in any
+   number of objects and/or vanilla JavaScript classes.  Deco factories
+   themselves can be passed in as a mixin to another call to `Deco()`.
 
-  keys = Object.keys(defaults).concat(Object.keys(incoming));
-  keys.forEach(function (key) {
-    merged[key] = incoming[key] === undefined ? defaults[key] : incoming[key];
-  });
+*/
+const Deco = module.exports = function Deco (...mixins) {
+  // TODO // s/mixin/decorator/ ?
 
-  return merged;
+  if (mixins.filter(isClass).length > 1) {
+    throw new Error('Only one class may be concatenated.');
+  }
+
+  if (mixins.slice(1).filter(isClass).length > 0) {
+    throw new Error(trim`
+      Classes must be the first mixin to be concatenated.
+    `);
+  }
+
+  // A factory function for creating new instances of the "class."
+  const factory = function factory (...parameters) {
+    /* eslint-disable no-invalid-this */
+    const defaults = factory.defaults();
+    const ƒ = factory.prototype.constructor;
+
+    const create = () => Reflect.construct(ƒ, parameters, factory);
+
+    if (defaults) {
+      if (!parameters.length) parameters.push({});
+      const last = parameters.slice(-1).pop();
+      assign(last, defaults, last);
+    }
+
+    if (!this) return create();
+
+    // If the factory was called from a containing object, create
+    // the object (don't mix in) e.g. when called as `YourLibrary.Factory()`.
+    for (const key of Reflect.ownKeys(this)) {
+      if (this[key] === factory) return create();
+    }
+
+    return Reflect.apply(ƒ, this, parameters);
+    /* eslint-enable no-invalid-this */
+  };
+
+  assign(factory, statics);
+  factory.initializeConstructor();
+  factory.concatenate(...mixins);
+
+  return factory;
 };
 
-deco.require = function () {
-  var decoratorFor = requireindex.apply(requireindex, arguments);
-  var decorators = Object.keys(decoratorFor).map(getValue.bind(decoratorFor));
-  decorators.hash = decoratorFor;
-  return decorators;
-};
+Deco.prototype = () => {};
+Deco.prototype.isDeco = true;
 
-// __Built-In Decorators__
-deco.builtin = {};
-
-// A decorator that calls `.set` on each constructor options argument.
-// Useful with Express apps.
-deco.builtin.setOptions = function (options) {
-  var that = this;
-  Object.keys(options).forEach(function (key) {
-    var value = options[key];
-    that.set(key, value);
-  });
-};
+// TODO default name is current filename ?

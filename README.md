@@ -8,41 +8,45 @@ Summary
  * Compose decorators into constructors and modules
  * Supports public, private, and protected instance members
  * Build constructors & modules in a way similar to partial classes
- * Uses Node's built-in inherits functionality
- * Easily plug your constructors at runtime with additional decorators
+ * Inherit from regular classes
+ * Avoid using problematic `new`, `super`, and `extends` concepts.
 
 Usage Overview
 --------------
 
 The main functionality is provided by the `deco()` function.  It builds constructors.
 
-    var deco = require('deco');
+    const Deco = require('deco');
 
-    var Constructor = deco();
-    var o = Constructor();
+    const Constructor = Deco();
+    const o = Constructor();
 
-Inheritence can be achieved by the `inherit` constructor method.  This is shorthand for the built-in `util.inherits(Constructor, super_)`.  The super constructor will be called on the object before decoration.
+Inheritence can be achieved by the `inherit` constructor method.  This injects the constructor into the prototype chain.
 
-    Constructor.inherit(super_);
+    Constructor.inherit(Date);
 
-To provide a constructor with decorators, use the `decorators` constructor method.
+To provide a constructor with decorators, use the `concatenate` constructor method.
 
-    Constructor.decorators(function () {
-      this.cheese = 'Shropshire Blue';
+    Constructor.concatenate({
+      constructor () {
+        this.cheese = 'Shropshire Blue';
+      }
     });
 
-    var snack = Constructor();
+    const snack = Constructor();
     // `snack.cheese` will be "Shropshire Blue."
 
 Decorators can also be supplied when the constructor is built.
 
-    var Ale = deco(function () {
-      this.created = new Date();
+    const Ale = Deco({
+      constructor () {
+        this.created = new Date();
+      }
     });
 
 Arrays of decorator functions are also allowed.
 
-    var Lager = deco([ f1, f2 ]);
+    const Lager = Deco(f1, f2);
 
 Deco.js provides a better way to provide default constructor options.
 
@@ -51,35 +55,37 @@ Deco.js provides a better way to provide default constructor options.
       hops: 'Nugget'
     });
 
-    Ale.decorators(function (options) {
-      // When `stout` is being created:
-      // `options.yeast` will be set to "Nottingham."
-      // `options.hops` will have the default value of "Nugget."
+    Ale.concatenate({
+      constructor (options) {
+        // When `stout` is being created:
+        // `options.yeast` will be set to "Nottingham."
+        // `options.hops` will have the default value of "Nugget."
+      }
     });
 
-    var stout = Ale({ yeast: 'Nottingham' });
+    const stout = Ale({ yeast: 'Nottingham' });
 
 
 Load a directory of decorator files into a constructor by sending in a path.
 
-    var Composed = deco(__dirname);
+    const Composed1 = Deco.load(__dirname);
 
 Or to only load specific files:
 
-    Composed = deco(__dirname, [ 'decorator1', 'decorator2' ]);
+    const Composed2 = Deco.load(__dirname, [ 'decorator1', 'decorator2' ]);
 
 Deco.js constructors are themselves decorators!  Use them to group decorators for use in other constructors, or call them directly on existing objects.
 
-    var AnotherConstructor = deco([ Composed, function () { /* ... */ }]);
+    const AnotherConstructor = Deco(Composed, Deco({ /* ... */ });
 
     // also...
 
-    var app = express();
+    const app = express();
     Composed.call(app);
 
 You can have constructors use a factory method, instead of using prototypal inheritence.
 
-    var ExpressConstructor = deco();
+    const ExpressConstructor = deco();
     ExpressConstructor.factory = express;
     // `ExpressConstructor()` will create the object to be decorated by
     // calling the factory function e.g. `express()`.

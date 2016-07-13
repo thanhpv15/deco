@@ -1,1 +1,3 @@
-module.exports = function () { this.artist = 'busy signal' };
+'use strict';
+// A dummy decorator for testing purposes.
+module.exports = { artist: 'busy signal' };

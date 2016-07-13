@@ -4,7 +4,8 @@
   "description": "Compose modular decorators to build constructors.  Your Node.js code will never have been as organized, reusable, and pluggable.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --bail --timeout 5000"
+    "lint": "eslint --fix .",
+    "test": "lab --coverage --threshold 100 --lint --lint-fix"
   },
   "repository": {
     "type": "git",
@@ -22,11 +23,15 @@
   "author": "William Riley-Land",
   "license": "MIT",
   "dependencies": {
+    "bursary": "^1.0.0",
+    "ecma-proposal-object.getownpropertydescriptors": "tc39/proposal-object-getownpropertydescriptors#a7dd63fe6c80933a4639c69f82f233c28d6eee3c",
     "requireindex": "~1.1.0"
   },
   "devDependencies": {
-    "mocha": "~1.18.2",
-    "expect.js": "~0.3.1",
-    "express": "~3.5.1"
+    "code": "^3.0.1",
+    "eslint": "^3.0.1",
+    "eslint-plugin-hapi": "^4.0.0",
+    "eslint-plugin-literate": "^1.0.0",
+    "lab": "^10.8.2"
   }
 }
