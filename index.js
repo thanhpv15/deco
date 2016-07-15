@@ -21,6 +21,37 @@ const assign = (o, ...updates) => {
 
   return o;
 };
+// Use assignment based inheritence to mix in members from objects, vanilla
+// JavaScript constructors, and/or Deco mixins.
+const concatenate = (factory, ...mixins) => {
+  // TODO // s/mixin/decorator/ ?
+
+  assign(factory.prototype, ...mixins.map((mixin) => {
+    return isFunction(mixin) ? mixin.prototype : mixin;
+  }));
+
+  factory.mergeConstructors(...mixins.map((mixin) => {
+    if (hasOwnProperty(mixin, 'constructor')) return mixin.constructor;
+    if (isDeco(mixin)) return mixin.prototype.constructor;
+    if (isFunction(mixin) && !isClass(mixin)) {
+      if (!mixin.prototype) return mixin;
+      return mixin.prototype.constructor;
+    }
+    if (isClass(mixin)) {
+      return function (...parameters) {
+        const o = Reflect.construct(mixin, parameters);
+        assign(this, o);
+        return this;
+      };
+    }
+    return;
+  }));
+
+  factory.defaults(...mixins.map((mixin) =>
+    isDeco(mixin) ? mixin.defaults() : mixin.defaults));
+
+  return factory;
+};
 // Make shallow copy of an object or array and merge additional arguments.
 const copy = (...a) => assign({}, ...a);
 const descriptors = (o) => Object.getOwnPropertyDescriptors(o);
@@ -80,38 +111,6 @@ const secrets = Bursary({
 });
 // Static members for the created constructors.
 const statics = {
-  // Use assignment based inheritence to mix in members from objects, vanilla
-  // JavaScript constructors, and/or Deco mixins.
-  concatenate (...mixins) {
-    // TODO // make this internal
-    // TODO // s/mixin/decorator/ ?
-
-    assign(this.prototype, ...mixins.map((mixin) => {
-      return isFunction(mixin) ? mixin.prototype : mixin;
-    }));
-
-    this.mergeConstructors(...mixins.map((mixin) => {
-      if (hasOwnProperty(mixin, 'constructor')) return mixin.constructor;
-      if (isDeco(mixin)) return mixin.prototype.constructor;
-      if (isFunction(mixin) && !isClass(mixin)) {
-        if (!mixin.prototype) return mixin;
-        return mixin.prototype.constructor;
-      }
-      if (isClass(mixin)) {
-        return function (...parameters) {
-          const o = Reflect.construct(mixin, parameters);
-          assign(this, o);
-          return this;
-        };
-      }
-      return;
-    }));
-
-    this.defaults(...mixins.map((mixin) =>
-      isDeco(mixin) ? mixin.defaults() : mixin.defaults));
-
-    return this;
-  },
   // Defaults that will be merged with constructor options passed in by the
   // end user of the factory.
   defaults (...updates) {
@@ -124,7 +123,7 @@ const statics = {
   load (directory, ...files) {
     const MixinByName = RequireIndex(directory, ...files);
     const mixins = Object.keys(MixinByName).map((name) => MixinByName[name]);
-    this.concatenate(...mixins);
+    concatenate(this, ...mixins);
     return this;
   },
   // Constructors that will be applied sequentially to newly created instances.
@@ -198,12 +197,10 @@ const Deco = module.exports = function Deco (...mixins) {
   factory.prototype = Object.create(Deco.prototype);
   Reflect.setPrototypeOf(factory, factory.prototype);
   initializeConstructor(factory);
-  factory.concatenate(...mixins);
+  concatenate(factory, ...mixins);
 
   return factory;
 };
 
 Deco.prototype = () => {};
 Deco.prototype.isDeco = true;
-
-// TODO default name is current filename ?

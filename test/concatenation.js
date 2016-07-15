@@ -15,7 +15,7 @@ const pathToDecorators = Path.join(__dirname, '/decorators');
 
 describe('Deco', () => {
   it('concatenates a series of decorators', (done) => {
-    const Factory = Deco().concatenate(Decorator1, Decorator2);
+    const Factory = Deco(Decorator1, Decorator2);
     const o = Factory();
 
     expect(o).to.exist();
@@ -42,21 +42,6 @@ describe('Deco', () => {
 
     expect(o).to.exist();
     expect(o.artist).not.to.exist();
-    expect(o.genre).to.equal('reggae');
-
-    done();
-  });
-
-  it('should not overwrite decorators', (done) => {
-    const Factory = Deco();
-
-    Factory.concatenate(Decorator1);
-    Factory.concatenate(Decorator2);
-
-    const o = Factory();
-
-    expect(o).to.exist();
-    expect(o.artist).to.equal('busy signal');
     expect(o.genre).to.equal('reggae');
 
     done();
