@@ -1,3 +1,5 @@
+/* eslint-disable literate/comment-coverage */
+
 'use strict';
 
 const Code = require('code');
@@ -69,16 +71,17 @@ describe('Deco', () => {
       constructor () { this.test = true }
       ƒ () { return meaningOfLife }
     };
-    const Factory = Deco(GarbageDay);
+    const Factory = Deco({ g () { return 'yo' } }, GarbageDay);
 
     const o = Factory();
     expect(o.ƒ()).to.equal(meaningOfLife);
-    expect(o.isDeco).to.equal(true);
+    expect(o.g()).to.equal('yo');
+    expect(o.isDeco).not.to.exist();
     expect(o.test).to.equal(true);
-    expect(o).to.be.an.instanceof(Deco);
-    expect(o).to.be.an.instanceof(Factory);
-    expect(o).to.be.an.instanceof(Function);
-    expect(o).not.to.be.an.instanceof(GarbageDay);
+    expect(o).not.to.be.an.instanceof(Deco);
+    expect(o).not.to.be.an.instanceof(Factory);
+    expect(o).not.to.be.an.instanceof(Function);
+    expect(o).to.be.an.instanceof(GarbageDay);
     expect(o).to.be.an.instanceof(Object);
 
     done();
@@ -92,7 +95,13 @@ describe('Deco', () => {
     done();
   });
 
-  it('allows concatenating a vanilla factory function', (done) => {
+  it('allows concatenating a factory function', (done) => {
+    const C = function C () { done() };
+    const Factory = Deco(C);
+    Factory();
+  });
+
+  it('allows concatenating a factory arrow function', (done) => {
     const C = () => done();
     const Factory = Deco(C);
     Factory();

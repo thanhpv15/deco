@@ -1,3 +1,5 @@
+/* eslint-disable literate/comment-coverage */
+
 'use strict';
 
 const Code = require('code');
@@ -46,6 +48,19 @@ describe('Deco', () => {
     const Factory = Deco(Parent1, Parent2);
     expect(() => Factory())
       .to.throw('Only the first constructor may create an object.');
+    done();
+  });
+
+  it('can be called as a decorator', (done) => {
+    const Factory = Deco({ b: -1 });
+    const o = { a: 1 };
+    expect(o.a).to.equal(1);
+    expect(o.b).not.to.exist();
+
+    Reflect.apply(Factory, o, []);
+    expect(o.a).to.equal(1);
+    expect(o.b).to.equal(-1);
+
     done();
   });
 });

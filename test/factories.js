@@ -1,3 +1,5 @@
+/* eslint-disable literate/comment-coverage */
+
 'use strict';
 
 const Code = require('code');

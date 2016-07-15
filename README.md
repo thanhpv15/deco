@@ -50,13 +50,13 @@ const drink = Lager();
 Load a directory of decorator files into a constructor by sending in a path.
 
 ```javascript
-const Composed1 = Deco.load('./test/decorators');
+const Composed1 = Deco.loadFrom('./test/decorators');
 ```
 
 Or to load specific files in a specific order:
 
 ```javascript
-const Composed2 = Deco.load('./test/decorators', 'd1', 'd2');
+const Composed2 = Deco.loadFrom('./test/decorators', 'd1', 'd2');
 ```
 
 Deco.js factories are themselves decorators!  Use them to group decorators for use in other factories, or call them directly on existing objects.
