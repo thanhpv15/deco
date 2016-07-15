@@ -37,7 +37,7 @@ describe('Deco', () => {
     Factory();
   });
 
-  it('allows setting defaults via mixin', (done) => {
+  it('allows setting defaults via decorator', (done) => {
     const Factory = Deco({
       constructor (options) {
         expect(options).to.exist();
