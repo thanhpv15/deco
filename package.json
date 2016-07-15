@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint --fix .",
-    "test": "lab --coverage --threshold 100 --lint --lint-fix"
+    "test": "npm-run-all test:*",
+    "test:code": "lab --coverage --threshold 100 --lint --lint-fix",
+    "test:readme": "markscript README.md"
   },
   "repository": {
     "type": "git",
@@ -32,6 +34,8 @@
     "eslint": "^3.0.1",
     "eslint-plugin-hapi": "^4.0.0",
     "eslint-plugin-literate": "^1.0.0",
-    "lab": "^10.8.2"
+    "lab": "^10.8.2",
+    "markscript": "wprl/markscript#693a76c82d9de59c4ad97375a5f8882d305c7fff",
+    "npm-run-all": "^2.3.0"
   }
 }

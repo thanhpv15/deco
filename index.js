@@ -6,7 +6,7 @@
 require('ecma-proposal-object.getownpropertydescriptors');
 
 const Bursary = require('bursary');
-const RequireIndex = require('requireindex');
+const RequireIndex = require('requireindex');  // TODO // consider alternate
 
 /*
     ## Utility Functions
@@ -32,6 +32,7 @@ const hasOwnProperty = (o, name) =>
 const identity = (a) => a;
 const isClass = (a) => {
   if (!isFunction(a)) return false;
+  if (isDeco(a)) return false;
   if (Reflect.ownKeys(a).includes('arguments')) return false;
   if (!Reflect.ownKeys(a).includes('prototype')) return false;
   return true;
@@ -147,16 +148,6 @@ const statics = {
     if (!Object.keys(defaults).length) return undefined;
     return copy(defaults);
   },
-  // Load and apply decorators from a directory.
-  load (directory, ...files) {
-    const MixinByName = RequireIndex(directory, ...files);
-
-    const decorators = Object.keys(MixinByName)
-      .map((name) => MixinByName[name]);
-
-    concatenate(this, ...decorators);
-    return this;
-  },
   // Add a property with hidden state to the factory prototype.
   property (name, initial, ƒ) {
     Reflect.defineProperty(this.prototype, name, {
@@ -218,3 +209,22 @@ const Deco = module.exports = function Deco (...decorators) {
 
 Deco.prototype = () => {};
 Deco.prototype.isDeco = true;
+
+  // Load and apply decorators from a directory.
+Deco.load = (directory, ...files) => {
+  const factory = Deco();
+  let DecoratorByName;
+
+  if (files.length) {
+    DecoratorByName = RequireIndex(directory, files);
+  }
+  else {
+    DecoratorByName = RequireIndex(directory);
+  }
+
+  const decorators = Object.keys(DecoratorByName)
+    .map((name) => DecoratorByName[name]);
+
+  concatenate(factory, ...decorators);
+  return factory;
+};

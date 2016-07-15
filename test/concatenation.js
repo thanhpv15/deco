@@ -26,7 +26,7 @@ describe('Deco', () => {
   });
 
   it('concatenates from a directory of decorator files', (done) => {
-    const Factory = Deco().load(pathToDecorators);
+    const Factory = Deco.load(pathToDecorators);
     const o = Factory();
 
     expect(o).to.exist();
@@ -37,7 +37,7 @@ describe('Deco', () => {
   });
 
   it('concatenates from a list of string file names', (done) => {
-    const Factory = Deco().load(pathToDecorators, [ 'd1' ]);
+    const Factory = Deco.load(pathToDecorators, 'd1');
     const o = Factory();
 
     expect(o).to.exist();
@@ -45,6 +45,23 @@ describe('Deco', () => {
     expect(o.genre).to.equal('reggae');
 
     done();
+  });
+
+  it('allows concatenating a Deco decorator', (done) => {
+    const Factory1 = Deco({
+      constructor () { done() }
+    });
+    const Factory2 = Deco(Factory1);
+    Factory2();
+  });
+
+  it('allows concatenating 2 Deco decorators', (done) => {
+    const Factory1 = Deco({
+      constructor () { done() }
+    });
+    const Factory2 = Deco({ ƒ () {} });
+    const Factory3 = Deco(Factory1, Factory2);
+    Factory3();
   });
 
   it('allows concatenating a class', (done) => {

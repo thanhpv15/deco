@@ -48,7 +48,7 @@ describe('Deco', () => {
   });
 
   it('allows factories to act as decorators', (done) => {
-    const Factory1 = Deco().load(Path.join(__dirname, '/decorators'));
+    const Factory1 = Deco.load(Path.join(__dirname, '/decorators'));
     const Factory2 = Deco(Factory1);
     const o = Factory2();
 
