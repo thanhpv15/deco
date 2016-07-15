@@ -71,6 +71,7 @@ describe('Deco', () => {
 
     const o = Factory();
     expect(o.ƒ()).to.equal(meaningOfLife);
+    expect(o.isDeco).to.equal(true);
     expect(o.test).to.equal(true);
     expect(o).to.be.an.instanceof(Deco);
     expect(o).to.be.an.instanceof(Factory);

@@ -27,6 +27,37 @@ const descriptors = (o) => Object.getOwnPropertyDescriptors(o);
 const hasOwnProperty = (o, name) =>
   Reflect.apply(Reflect.hasOwnProperty, o, [ name ]);
 const identity = (a) => a;
+const initializeConstructor = (factory) => {
+  const constructors = secrets.constructorsByFactory(factory);
+  const factoryConstructor = function factoryConstructor (...parameters) {
+    if (factory.defaults()) {
+      if (!parameters.length) parameters.push({});
+      const last = parameters.slice(-1).pop();
+      const options = copy(factory.defaults(), last);
+      assign(last, options);
+    }
+
+    return constructors.reduce((o, ƒ) => {
+      const next = Reflect.apply(ƒ, o, parameters);
+      if (isUndefined(next)) return o;
+      if (next === o) return o;
+
+      const isFirst = ƒ === constructors[0];
+      if (!isFirst) {
+        throw new Error(trim`
+          Only the first constructor may create an object.`);
+      }
+      return assign(next, factory.prototype);
+    }, this);
+  };
+
+  Reflect.defineProperty(factory.prototype, 'constructor', {
+    configurable: true,
+    enumerable: false,
+    value: factoryConstructor,
+    writable: true
+  });
+};
 const isClass = (a) => {
   if (!isFunction(a)) return false;
   if (Reflect.ownKeys(a).includes('arguments')) return false;
@@ -88,46 +119,6 @@ const statics = {
     assign(defaults, ...updates);
     if (!Object.keys(defaults).length) return;
     return copy(defaults);
-  },
-  initializeConstructor () {
-    // TODO // check not already called
-    const constructors = secrets.constructorsByFactory(this);
-    const defaults = () => this.defaults();
-    const prototype = this.prototype;
-    // The factory's constructor.  This function aggregates all
-    // concatenated constructors.
-    const factoryConstructor = function factoryConstructor (...parameters) {
-      if (defaults()) {
-        if (!parameters.length) parameters.push({});
-        const last = parameters.slice(-1).pop();
-        const options = copy(defaults(), last);
-        assign(last, options);
-      }
-
-      return constructors.reduce((o, ƒ) => {
-        const next = Reflect.apply(ƒ, o, parameters);
-        if (isUndefined(next)) return o;
-        if (next === o) return o;
-
-        const isFirst = ƒ === constructors[0];
-        if (!isFirst) {
-          throw new Error(trim`
-            Only the first constructor may create an object.`);
-        }
-        return assign(next, prototype);
-      }, this);
-    };
-
-    // Set up the prototype for the factory.
-    this.prototype = Object.create(Deco.prototype);
-    Reflect.defineProperty(this.prototype, 'constructor', {
-      configurable: true,
-      enumerable: false,
-      value: factoryConstructor,
-      writable: true
-    });
-    Reflect.setPrototypeOf(this, this.prototype);
-    return this;
   },
   // Load and apply mixins from a directory.
   load (directory, ...files) {
@@ -204,7 +195,9 @@ const Deco = module.exports = function Deco (...mixins) {
   };
 
   assign(factory, statics);
-  factory.initializeConstructor();
+  factory.prototype = Object.create(Deco.prototype);
+  Reflect.setPrototypeOf(factory, factory.prototype);
+  initializeConstructor(factory);
   factory.concatenate(...mixins);
 
   return factory;
