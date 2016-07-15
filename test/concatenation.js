@@ -81,13 +81,6 @@ describe('Deco', () => {
     done();
   });
 
-  it('requires a class to be the first mixin', (done) => {
-    const GarbageDay = class {};
-    expect(() => Deco({}, GarbageDay))
-      .to.throw('Classes must be the first mixin to be concatenated.');
-    done();
-  });
-
   it('disallows concatenating more than one class', (done) => {
     const FunRangers = class {};
     const GarbageDay = class {};

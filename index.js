@@ -52,6 +52,9 @@ const statics = {
   // Use assignment based inheritence to mix in members from objects, vanilla
   // JavaScript constructors, and/or Deco mixins.
   concatenate (...mixins) {
+    // TODO // make this internal
+    // TODO // s/mixin/decorator/ ?
+
     assign(this.prototype, ...mixins.map((mixin) => {
       return isFunction(mixin) ? mixin.prototype : mixin;
     }));
@@ -86,24 +89,32 @@ const statics = {
     if (!Object.keys(defaults).length) return;
     return copy(defaults);
   },
-  // Inject prototypal inheritence.
-  inherit (C) {
-    // TODO // check C.prototype exists, throw if not
-    this.prototype.prototype = Object.create(C.prototype);
-    this.mergeConstructors(C.prototype.constructor);
-    Reflect.setPrototypeOf(this.prototype, this.prototype.prototype);
-    return this;
-  },
   initializeConstructor () {
     // TODO // check not already called
     const constructors = secrets.constructorsByFactory(this);
+    const defaults = () => this.defaults();
+    const prototype = this.prototype;
     // The factory's constructor.  This function aggregates all
     // concatenated constructors.
     const factoryConstructor = function factoryConstructor (...parameters) {
+      if (defaults()) {
+        if (!parameters.length) parameters.push({});
+        const last = parameters.slice(-1).pop();
+        const options = copy(defaults(), last);
+        assign(last, options);
+      }
+
       return constructors.reduce((o, ƒ) => {
         const next = Reflect.apply(ƒ, o, parameters);
         if (isUndefined(next)) return o;
-        return next;
+        if (next === o) return o;
+
+        const isFirst = ƒ === constructors[0];
+        if (!isFirst) {
+          throw new Error(trim`
+            Only the first constructor may create an object.`);
+        }
+        return assign(next, prototype);
       }, this);
     };
 
@@ -157,6 +168,11 @@ const trim = (strings) => {
   const notEmpty = trimmed.filter(identity);
   return notEmpty.join('\n');
 };
+const validate = (...mixins) => {
+  if (mixins.filter(isClass).length > 1) {
+    throw new Error('Only one class may be concatenated.');
+  }
+};
 
 /*
 
@@ -168,31 +184,13 @@ const trim = (strings) => {
 
 */
 const Deco = module.exports = function Deco (...mixins) {
-  // TODO // s/mixin/decorator/ ?
-
-  if (mixins.filter(isClass).length > 1) {
-    throw new Error('Only one class may be concatenated.');
-  }
-
-  if (mixins.slice(1).filter(isClass).length > 0) {
-    throw new Error(trim`
-      Classes must be the first mixin to be concatenated.
-    `);
-  }
+  validate(...mixins);
 
   // A factory function for creating new instances of the "class."
   const factory = function factory (...parameters) {
-    /* eslint-disable no-invalid-this */
-    const defaults = factory.defaults();
     const ƒ = factory.prototype.constructor;
 
     const create = () => Reflect.construct(ƒ, parameters, factory);
-
-    if (defaults) {
-      if (!parameters.length) parameters.push({});
-      const last = parameters.slice(-1).pop();
-      assign(last, defaults, last);
-    }
 
     if (!this) return create();
 
@@ -203,7 +201,6 @@ const Deco = module.exports = function Deco (...mixins) {
     }
 
     return Reflect.apply(ƒ, this, parameters);
-    /* eslint-enable no-invalid-this */
   };
 
   assign(factory, statics);
