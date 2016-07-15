@@ -30,7 +30,7 @@ const concatenate = (factory, ...mixins) => {
     return isFunction(mixin) ? mixin.prototype : mixin;
   }));
 
-  factory.mergeConstructors(...mixins.map((mixin) => {
+  mergeConstructors(factory, ...mixins.map((mixin) => {
     if (hasOwnProperty(mixin, 'constructor')) return mixin.constructor;
     if (isDeco(mixin)) return mixin.prototype.constructor;
     if (isFunction(mixin) && !isClass(mixin)) {
@@ -98,6 +98,11 @@ const isClass = (a) => {
 const isDeco = (a) => a instanceof Deco;
 const isFunction = (a) => a instanceof Function;
 const isUndefined = (a) => a === undefined;
+// Constructors that will be applied sequentially to newly created instances.
+const mergeConstructors = (factory, ...updates) => {
+  const constructors = secrets.constructorsByFactory(factory);
+  constructors.push(...updates.filter(identity));
+};
 // constructorsByFactory stores the initialization methods for each factory
 //   function created with Deco.
 // defaultsByFactory stores the default constructor options for each
@@ -124,12 +129,6 @@ const statics = {
     const MixinByName = RequireIndex(directory, ...files);
     const mixins = Object.keys(MixinByName).map((name) => MixinByName[name]);
     concatenate(this, ...mixins);
-    return this;
-  },
-  // Constructors that will be applied sequentially to newly created instances.
-  mergeConstructors (...updates) {
-    const constructors = secrets.constructorsByFactory(this);
-    constructors.push(...updates.filter(identity));
     return this;
   },
   // Add a property with hidden state to the factory prototype.
