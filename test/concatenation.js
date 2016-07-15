@@ -26,7 +26,7 @@ describe('Deco', () => {
   });
 
   it('concatenates from a directory of decorator files', (done) => {
-    const Factory = Deco.load(pathToDecorators);
+    const Factory = Deco.loadFrom(pathToDecorators);
     const o = Factory();
 
     expect(o).to.exist();
@@ -37,7 +37,7 @@ describe('Deco', () => {
   });
 
   it('concatenates from a list of string file names', (done) => {
-    const Factory = Deco.load(pathToDecorators, 'd1');
+    const Factory = Deco.load('decorators/d1');
     const o = Factory();
 
     expect(o).to.exist();

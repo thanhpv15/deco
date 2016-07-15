@@ -6,7 +6,9 @@
 require('ecma-proposal-object.getownpropertydescriptors');
 
 const Bursary = require('bursary');
-const RequireIndex = require('requireindex');  // TODO // consider alternate
+const CallerPath = require('caller-path');
+const Fs = require('fs');
+const Path = require('path');
 
 /*
     ## Utility Functions
@@ -211,20 +213,18 @@ Deco.prototype = () => {};
 Deco.prototype.isDeco = true;
 
   // Load and apply decorators from a directory.
-Deco.load = (directory, ...files) => {
+Deco.load = (...files) => {
+  const directory = Path.dirname(CallerPath());
+  return Deco.loadFrom(directory, ...files);
+};
+
+Deco.loadFrom = (directory, ...files) => {
   const factory = Deco();
-  let DecoratorByName;
 
-  if (files.length) {
-    DecoratorByName = RequireIndex(directory, files);
-  }
-  else {
-    DecoratorByName = RequireIndex(directory);
-  }
+  if (!files.length) files.push(...Fs.readdirSync(directory));
 
-  const decorators = Object.keys(DecoratorByName)
-    .map((name) => DecoratorByName[name]);
+  concatenate(factory, ...files.map((file) =>
+    require(Path.resolve(directory, file))));
 
-  concatenate(factory, ...decorators);
   return factory;
 };
