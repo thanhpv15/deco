@@ -26,13 +26,10 @@ const isDeco = (a) => a[symbols.isDeco] === true;
 const isFunction = (a) => a instanceof Function;
 // constructorsByFactory stores the initialization methods for each factory
 //   function created with Deco.
-// defaultsByFactory stores the default constructor options for each
-//   factory function created with Deco.
 // stateByInstance stores the private internal state for each object created
 //   by a Deco factory.
 const secrets = Bursary({
   constructorsByFactory: Array,
-  defaultsByFactory: Object,
   stateByInstance: Object
 });
 // Set `prototype` and `__proto__` for the given object.
@@ -79,24 +76,12 @@ const concatenate = (factory, ...decorators) => {
     }
     return undefined;
   }));
-
-  factory.defaults(...decorators.map((decorator) =>
-    isDeco(decorator) ? decorator.defaults() : undefined));
 };
 // Create and assign the constructor to the given factory prototype.
 const initializeConstructor = (factory) => {
   const constructors = secrets.constructorsByFactory(factory);
-  const defaults = secrets.defaultsByFactory(factory);
   const factoryConstructor = function factoryConstructor (...parameters) {
     /* eslint-disable no-invalid-this */
-
-    // If defaults have been assigned, merge them with the last parameter.
-    if (defaults.length) {
-      if (!parameters.length) parameters.push({});
-      const last = parameters.slice(-1).pop();
-      const options = Copy(defaults, last);
-      Assign(last, options);
-    }
 
     // Apply each merged constructor function, one after the other.
     return constructors.reduce((o, ƒ) => {
@@ -130,26 +115,6 @@ const mergeConstructors = (factory, ...updates) => {
 */
 
 const statics = {
-  // Defaults that will be merged with constructor options passed in by the
-  // end user of the factory.
-  defaults (...updates) { // TODO // remove
-    const defaults = secrets.defaultsByFactory(this);
-    Assign(defaults, ...updates);
-    return this;
-  },
-  finalize () {
-    Object.keys(statics).forEach((key) => Reflect.deleteProperty(this, key));
-    Object.freeze(this);
-    Object.freeze(this.prototype);
-    return this;
-  },
-  immutable () {
-    Object.keys(statics).forEach((key) => Reflect.deleteProperty(this, key));
-    Assign(this, staticsImmutable);
-    Object.freeze(this);
-    Object.freeze(this.prototype);
-    return this;
-  },
   // Add a property with hidden state to the factory prototype.
   property (name, initial, ƒ) { // TODO // Use Deco.secrets
     Reflect.defineProperty(this.prototype, name, {
@@ -167,23 +132,6 @@ const statics = {
     });
 
     return this;
-  }
-};
-
-const staticsImmutable = { // TODO // remove
-  // Return a new immutable factory with the new decorators applied.
-  concatenate (...decorators) {
-    return Deco(this, ...decorators).immutable();
-  },
-  // Getter/setter for defaults.  Calling with no arguments returns a copy
-  // of the defaults object and calling with updates returns a new immutable
-  // factory.
-  defaults (...updates) {
-    const defaults = secrets.defaultsByFactory(this);
-    if (!updates.length) return Copy(defaults);
-    const factory = Deco(this).defaults(defaults, ...updates);
-    setPrototype(factory, this.prototype);
-    return factory.immutable();
   }
 };
 
