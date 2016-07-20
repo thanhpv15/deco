@@ -4,7 +4,8 @@
     "node": true
   },
   "globals": {
-    "Reflect": false
+    "Reflect": false,
+    "Symbol": false
   },
   "parserOptions": {
     "ecmaVersion": 6
@@ -264,7 +265,9 @@
     "object-shorthand": "error",
     "prefer-arrow-callback": "error",
     "prefer-const": "error",
-    "prefer-reflect": "error",
+    "prefer-reflect": [ "error", {
+      "exceptions": [ "apply", "call" ]
+    }],
     "prefer-rest-params": "error",
     "prefer-spread": "error",
     "prefer-template": "error",

@@ -41,16 +41,6 @@ describe('Deco', () => {
     done();
   });
 
-  it('only allows the first constructor to return an object', (done) => {
-    const Parent1 = () => Object.create(null);
-    const Parent2 = () => Object.create(null);
-
-    const Factory = Deco(Parent1, Parent2);
-    expect(() => Factory())
-      .to.throw('Only the first constructor may create an object.');
-    done();
-  });
-
   it('can be called as a decorator', (done) => {
     const Factory = Deco({ b: -1 });
     const o = { a: 1 };

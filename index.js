@@ -5,7 +5,6 @@
 const Assign = require('copy-properties/assign');
 const Bursary = require('bursary');
 const CallerPath = require('caller-path');
-const Copy = require('copy-properties/copy');
 const Fs = require('fs');
 const Path = require('path');
 
@@ -23,14 +22,11 @@ const isClass = (a) => {
 // Check if the given value was created by Deco.
 const isDeco = (a) => a[symbols.isDeco] === true;
 // Check if the given valye is a function.
-const isFunction = (a) => a instanceof Function;
+const isFunction = (a) => typeof a === 'function';
 // constructorsByFactory stores the initialization methods for each factory
 //   function created with Deco.
-// stateByInstance stores the private internal state for each object created
-//   by a Deco factory.
 const secrets = Bursary({
-  constructorsByFactory: Array,
-  stateByInstance: Object
+  constructorsByFactory: Array
 });
 // Set `prototype` and `__proto__` for the given object.
 // Note: this may be redundant when v8 bug is fixed see: http://... TODO
@@ -47,7 +43,7 @@ const symbols = {
 const validate = (...constructors) => {
   const classCount = constructors.filter(isClass).length;
   if (classCount > 1) throw new Error('Only one class may be concatenated.');
-  if (classCount === 1 && !isClass(constructors[0])) { // TODO // ?
+  if (classCount === 1 && !isClass(constructors[0])) {
     throw new Error('Class constructors must be the first in the chain.');
   }
 };
@@ -108,33 +104,6 @@ const mergeConstructors = (factory, ...updates) => {
   validate(...constructors);
 };
 
-/*
-    ## Factory public static members
-
-    Static members for the created factories.
-*/
-
-const statics = {
-  // Add a property with hidden state to the factory prototype.
-  property (name, initial, ƒ) { // TODO // Use Deco.secrets
-    Reflect.defineProperty(this.prototype, name, {
-      get () {
-        const state = secrets.stateByInstance(this);
-        const a = state[name];
-        return a === undefined ? initial : a;
-      },
-      set (a) {
-        const state = secrets.stateByInstance(this);
-        if (ƒ) state[name] = Reflect.apply(ƒ, this, [ a, state[name] ]);
-        else state[name] = a;
-        return this[name];
-      }
-    });
-
-    return this;
-  }
-};
-
 //    ## Module Definition
 //
 //    A function used to create factory functions (*classes*) by mixing in any
@@ -165,8 +134,7 @@ const Deco = module.exports = function Deco (...decorators) {
     /* eslint-enable no-invalid-this */
   };
 
-  // Set up the factory statics, prototype, etc.
-  Assign(factory, statics);
+  // Set up the factory prototype and constructor, then apply decorators.
   setPrototype(factory, Object.create(Deco.prototype));
   initializeConstructor(factory);
   concatenate(factory, ...decorators);
@@ -206,4 +174,3 @@ Deco.requireFrom = (directory, ...files) => {
   /* eslint-enable global-require */
 };
 
-Object.freeze(Deco);
