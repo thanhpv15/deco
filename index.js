@@ -139,6 +139,9 @@ const Deco = module.exports = function Deco (...decorators) {
   initializeConstructor(factory);
   concatenate(factory, ...decorators);
 
+  Object.freeze(factory);
+  Object.freeze(factory.prototype);
+
   return factory;
 };
 
@@ -156,8 +159,7 @@ Deco.load = (...files) => {
 };
 // Load and apply decorators from a directory.
 Deco.loadFrom = (directory, ...files) => {
-  const factory = Deco();
-  concatenate(factory, ...Deco.requireFrom(directory, ...files));
+  const factory = Deco(...Deco.requireFrom(directory, ...files));
   return factory;
 };
 // Require all files in the caller's directory.
@@ -174,3 +176,5 @@ Deco.requireFrom = (directory, ...files) => {
   /* eslint-enable global-require */
 };
 
+Object.freeze(Deco);
+Object.freeze(Deco.prototype);
