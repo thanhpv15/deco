@@ -14,6 +14,7 @@ const expect = Code.expect;
 const it = Lab.it;
 const meaningOfLife = 42;
 const pathToDecorators = Path.join(__dirname, '/decorators');
+const testModuleCount = 5;
 
 describe('Deco', () => {
   it('concatenates a series of decorators', (done) => {
@@ -35,6 +36,11 @@ describe('Deco', () => {
     expect(o.artist).to.equal('busy signal');
     expect(o.genre).to.equal('reggae');
 
+    done();
+  });
+
+  it('requires from a directory of decorator files', (done) => {
+    expect(Deco.require()).to.have.length(testModuleCount);
     done();
   });
 
@@ -84,14 +90,6 @@ describe('Deco', () => {
     expect(o).to.be.an.instanceof(GarbageDay);
     expect(o).to.be.an.instanceof(Object);
 
-    done();
-  });
-
-  it('disallows concatenating more than one class', (done) => {
-    const FunRangers = class {};
-    const GarbageDay = class {};
-    expect(() => Deco(FunRangers, GarbageDay))
-      .to.throw('Only one class may be concatenated.');
     done();
   });
 

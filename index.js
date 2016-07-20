@@ -12,9 +12,7 @@ const Path = require('path');
 
 // Check if the given value is a class.
 const isClass = (a) => {
-  if (a[symbols.isClassWrapper] === true) return true;
   if (!isFunction(a)) return false;
-  if (isDeco(a)) return false;
   if (!Reflect.ownKeys(a).includes('prototype')) return false;
   if (a.toString().indexOf('class') !== 0) return false;
   return true;
@@ -38,14 +36,6 @@ const setPrototype = (o, prototype) => {
 const symbols = {
   isClassWrapper: Symbol('isClassWrapper'),
   isDeco: Symbol('isDeco')
-};
-// Ensure there is only one class in the given decorators.
-const validate = (...constructors) => {
-  const classCount = constructors.filter(isClass).length;
-  if (classCount > 1) throw new Error('Only one class may be concatenated.');
-  if (classCount === 1 && !isClass(constructors[0])) {
-    throw new Error('Class constructors must be the first in the chain.');
-  }
 };
 
 // ## Factory Private Static Members
@@ -101,7 +91,6 @@ const initializeConstructor = (factory) => {
 const mergeConstructors = (factory, ...updates) => {
   const constructors = secrets.constructorsByFactory(factory);
   constructors.push(...updates.filter((a) => a));
-  validate(...constructors);
 };
 
 //    ## Module Definition
