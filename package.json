@@ -25,9 +25,7 @@
   "author": "William Riley-Land",
   "license": "MIT",
   "dependencies": {
-    "bursary": "^1.0.0",
-    "ecma-proposal-object.getownpropertydescriptors": "tc39/proposal-object-getownpropertydescriptors#a7dd63fe6c80933a4639c69f82f233c28d6eee3c",
-    "requireindex": "~1.1.0"
+    "bursary": "^1.0.0"
   },
   "devDependencies": {
     "code": "^3.0.1",
