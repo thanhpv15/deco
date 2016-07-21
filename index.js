@@ -1,6 +1,6 @@
 'use strict';
 
-// # Deco 2
+//    # Deco 2
 
 const Assign = require('copy-properties/assign');
 const Bursary = require('bursary');
@@ -8,7 +8,7 @@ const CallerPath = require('caller-path');
 const Fs = require('fs');
 const Path = require('path');
 
-// ## Utility Functions
+//    ## Utility Functions
 
 // Check if the given value is a class.
 const isClass = (a) => {
@@ -17,8 +17,6 @@ const isClass = (a) => {
   if (a.toString().indexOf('class') !== 0) return false;
   return true;
 };
-// Check if the given value was created by Deco.
-const isDeco = (a) => a[symbols.isDeco] === true;
 // Check if the given valye is a function.
 const isFunction = (a) => typeof a === 'function';
 // constructors stores the initialization methods for each factory
@@ -36,11 +34,10 @@ const setPrototype = (o, prototype) => {
 };
 // Symbols used internally.
 const symbols = {
-  isClassWrapper: Symbol('isClassWrapper'),
-  isDeco: Symbol('isDeco')
+  isClassWrapper: Symbol('isClassWrapper')
 };
 
-// ## Factory Private Static Members
+//    ## Factory Private Static Members
 
 // Use assignment based inheritence to mix in members from objects, vanilla
 // JavaScript constructors, and/or Deco decorators.
@@ -52,7 +49,6 @@ const concatenate = (factory, ...decorators) => {
     if (Reflect.hasOwnProperty.call(decorator, 'constructor')) {
       return decorator.constructor;
     }
-    if (isDeco(decorator)) return decorator.prototype.constructor; // TODO del
     if (isFunction(decorator) && !isClass(decorator)) {
       if (!decorator.prototype) return decorator;
       return decorator.prototype.constructor;
@@ -153,13 +149,12 @@ const Deco = module.exports = function Deco (...decorators) {
 // Set up Deco's prototype.  The factory will cause most created objects
 // to inherit from Deco.
 setPrototype(Deco, () => {});
-Deco.prototype[symbols.isDeco] = true;
 
-// ## Deco Public Methods
+//    ## Deco Public Methods
 
 //
 Deco.defaults = (options, ...updates) => {
-  return Copy(options, ...updates); // TODO what is a better name for fullOptions?
+  return Copy(options, ...updates);
 };
 // Load and apply decorators from the caller's directory.
 Deco.load = (...files) => {
