@@ -5,7 +5,8 @@
   },
   "globals": {
     "Reflect": false,
-    "Symbol": false
+    "Symbol": false,
+    "WeakMap": false
   },
   "parserOptions": {
     "ecmaVersion": 6

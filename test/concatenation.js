@@ -104,4 +104,29 @@ describe('Deco', () => {
     const Factory = Deco(C);
     Factory();
   });
+
+  it('concatenates properties with private data', (done) => {
+    const hidden = Deco.hidden(); // TODO // turn order back on
+
+    const Factory = Deco({
+      get masonic () { return hidden(this).masonic },
+      set masonic (a) { return hidden(this).masonic = a }
+    });
+    const o1 = Factory();
+    const o2 = Factory();
+
+    expect(o1.masonic).to.equal(undefined);
+    expect(o2.masonic).to.equal(undefined);
+
+    o1.masonic = 'yo';
+    expect(o1.masonic).to.equal('yo');
+    expect(o2.masonic).to.equal(undefined);
+
+    o1.masonic = undefined;
+    o2.masonic = 'hullo';
+    expect(o1.masonic).to.equal(undefined);
+    expect(o2.masonic).to.equal('hullo');
+
+    done();
+  });
 });

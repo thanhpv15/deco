@@ -25,7 +25,7 @@
   "author": "William Riley-Land",
   "license": "MIT",
   "dependencies": {
-    "bursary": "^1.0.0"
+    "bursary": "^3.0.0"
   },
   "devDependencies": {
     "code": "^3.0.1",

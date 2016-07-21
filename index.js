@@ -21,10 +21,12 @@ const isClass = (a) => {
 const isDeco = (a) => a[symbols.isDeco] === true;
 // Check if the given valye is a function.
 const isFunction = (a) => typeof a === 'function';
-// constructorsByFactory stores the initialization methods for each factory
+// constructors stores the initialization methods for each factory
 //   function created with Deco.
+// defaults stores the defaults associated with a Deco factory.
 const secrets = Bursary({
-  constructorsByFactory: Array
+  constructors: Array,
+  defaults: Object // TODO // store but do not auto-apply defaults!  Add back default static immutable meethod!
 });
 // Set `prototype` and `__proto__` for the given object.
 // Note: this may be redundant when v8 bug is fixed see: http://... TODO
@@ -50,7 +52,7 @@ const concatenate = (factory, ...decorators) => {
     if (Reflect.hasOwnProperty.call(decorator, 'constructor')) {
       return decorator.constructor;
     }
-    if (isDeco(decorator)) return decorator.prototype.constructor;
+    if (isDeco(decorator)) return decorator.prototype.constructor; // TODO del
     if (isFunction(decorator) && !isClass(decorator)) {
       if (!decorator.prototype) return decorator;
       return decorator.prototype.constructor;
@@ -65,9 +67,11 @@ const concatenate = (factory, ...decorators) => {
 };
 // Create and assign the constructor to the given factory prototype.
 const initializeConstructor = (factory) => {
-  const constructors = secrets.constructorsByFactory(factory);
+  const constructors = secrets(factory).constructors;
   const factoryConstructor = function factoryConstructor (...parameters) {
     /* eslint-disable no-invalid-this */
+
+    // TODO // allow this.setArguments in constructors?
 
     // Apply each merged constructor function, one after the other.
     return constructors.reduce((o, ƒ) => {
@@ -89,8 +93,18 @@ const initializeConstructor = (factory) => {
 };
 // Constructors that will be applied sequentially to newly created instances.
 const mergeConstructors = (factory, ...updates) => {
-  const constructors = secrets.constructorsByFactory(factory);
+  const constructors = secrets(factory).constructors;
   constructors.push(...updates.filter((a) => a));
+};
+
+//    ## Public Static Factory Members
+
+const statics = {
+  defaults (...updates) {
+    const current = defaultsByFactory(this);
+    if (updates.length) Assign(current, ...updates);
+    return Copy(current);
+  }
 };
 
 //    ## Module Definition
@@ -123,13 +137,15 @@ const Deco = module.exports = function Deco (...decorators) {
     /* eslint-enable no-invalid-this */
   };
 
-  // Set up the factory prototype and constructor, then apply decorators.
+  // Set up the factory prototype, statics, and constructor,
+  // then apply the given decorators.
   setPrototype(factory, Object.create(Deco.prototype));
   initializeConstructor(factory);
+  Assign(factory, statics);
   concatenate(factory, ...decorators);
 
   Object.freeze(factory);
-  Object.freeze(factory.prototype);
+  Object.freeze(factory.prototype); // TODO // set prototype parent to first constructor?
 
   return factory;
 };
@@ -141,6 +157,10 @@ Deco.prototype[symbols.isDeco] = true;
 
 // ## Deco Public Methods
 
+//
+Deco.defaults = (options, ...updates) => {
+  return Copy(options, ...updates); // TODO what is a better name for fullOptions?
+};
 // Load and apply decorators from the caller's directory.
 Deco.load = (...files) => {
   const directory = Path.dirname(CallerPath());
@@ -160,10 +180,13 @@ Deco.require = (...files) => {
 //  to be loaded.
 Deco.requireFrom = (directory, ...files) => {
   /* eslint-disable global-require */
+  // TODO // leave out index.js or any other files?  Glance over requireindex code.
   if (!files.length) files.push(...Fs.readdirSync(directory));
   return files.map((file) => require(Path.resolve(directory, file)));
   /* eslint-enable global-require */
 };
+// Allow a way for instances to store private data.
+Deco.hidden = (definition) => Bursary(definition);
 
 Object.freeze(Deco);
 Object.freeze(Deco.prototype);

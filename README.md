@@ -70,26 +70,8 @@ const existing = { a: 1, b: 2, c: 3 };
 Another.call(existing);
 ```
 
-Deco.js provides a better way to provide default constructor options.
+You can have factories create objects of other instances.
 
-```javascript
-const Ale = Deco(Beer, {
-  constructor (options) {
-    // When `stout` is being created:
-    // `options.yeast` will be set to "Nottingham."
-    // `options.hops` will have the default value of "Nugget."
-  }
-});
-
-Ale.defaults({
-  yeast: 'Dry English Ale',
-  hops: 'Nugget'
-});
-
-const stout = Ale({ yeast: 'Nottingham' });
-```
-
-You can have factories create objects of other instances.  Only the first constructor in the chain can change the constructed object.
 ```javascript
 const ErrorFactory = Deco(Error);
 // `ErrorFactory()` will create the object to be decorated by
