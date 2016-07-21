@@ -10,6 +10,7 @@ const Path = require('path');
 
 //    ## Utility Functions
 
+const flatten = (a) => a; // TODO
 // Check if the given value is a class.
 const isClass = (a) => {
   if (!isFunction(a)) return false;
@@ -24,7 +25,7 @@ const isFunction = (a) => typeof a === 'function';
 // defaults stores the defaults associated with a Deco factory.
 const secrets = Bursary({
   constructors: Array,
-  defaults: Object // TODO // store but do not auto-apply defaults!  Add back default static immutable meethod!
+  defaults: Object
 });
 // Set `prototype` and `__proto__` for the given object.
 // Note: this may be redundant when v8 bug is fixed see: http://... TODO
@@ -42,11 +43,9 @@ const symbols = {
 // Use assignment based inheritence to mix in members from objects, vanilla
 // JavaScript constructors, and/or Deco decorators.
 const concatenate = (factory, ...decorators) => {
-  Assign(factory.prototype, ...decorators.map((decorator) =>
-    isFunction(decorator) ? decorator.prototype : decorator));
-
+  // Merge constructors
   mergeConstructors(factory, ...decorators.map((decorator) => {
-    if (Reflect.hasOwnProperty.call(decorator, 'constructor')) {
+    if (Reflect.hasOwnProperty.call(decorator, 'constructor')) { // TODO // move to mergeC?
       return decorator.constructor;
     }
     if (isFunction(decorator) && !isClass(decorator)) {
@@ -60,32 +59,51 @@ const concatenate = (factory, ...decorators) => {
     }
     return undefined;
   }));
+
+  // Merge defaults
+  Assign(secrets(factory).defaults, ...decorators.map((decorator) => {
+    if (Reflect.hasOwnProperty.call(decorator, 'defaults')) {
+      return decorator.defaults;
+    }
+    return undefined;
+  }));
+
+  // Merge prototypes
+  Assign(factory.prototype, ...decorators.map((decorator) =>
+    isFunction(decorator) ? flatten(decorator.prototype) : decorator));
 };
 // Create and assign the constructor to the given factory prototype.
-const initializeConstructor = (factory) => {
-  const constructors = secrets(factory).constructors;
-  const factoryConstructor = function factoryConstructor (...parameters) {
-    /* eslint-disable no-invalid-this */
+const initialize = (factory) => {
+  const members = {
+    constructor: function factoryConstructor (...parameters) {
+      /* eslint-disable no-invalid-this */
+      const constructors = secrets(factory).constructors;
 
-    // TODO // allow this.setArguments in constructors?
-
-    // Apply each merged constructor function, one after the other.
-    return constructors.reduce((o, ƒ) => {
-      const next = Reflect.apply(ƒ, o, parameters);
-      if (next === undefined) return o;
-      if (next === o) return o;
-      Assign(next, factory.prototype);
-      return next;
-    }, this);
-    /* eslint-enable no-invalid-this */
+      // Apply each merged constructor function, one after the other.
+      return constructors.reduce((o, ƒ) => {
+        const next = ƒ.apply(o, parameters);
+        if (next === undefined) return o;
+        if (next === o) return o;
+        Assign(next, factory.prototype);
+        return next;
+      }, this);
+      /* eslint-enable no-invalid-this */
+    },
+    defaults (...updates) {
+      return Copy(secrets(factory).defaults, ...updates);
+    }
   };
 
-  Reflect.defineProperty(factory.prototype, 'constructor', {
-    configurable: true,
-    enumerable: false,
-    value: factoryConstructor,
-    writable: true
-  });
+  for (const name of Reflect.ownKeys(members)) {
+    Reflect.defineProperty(factory.prototype, name, {
+      configurable: true,
+      enumerable: false,
+      value: members[name],
+      writable: true
+    });
+  }
+
+  Assign(factory, statics); // TODO // enumerability
 };
 // Constructors that will be applied sequentially to newly created instances.
 const mergeConstructors = (factory, ...updates) => {
@@ -97,9 +115,10 @@ const mergeConstructors = (factory, ...updates) => {
 
 const statics = {
   defaults (...updates) {
-    const current = defaultsByFactory(this);
+    const current = secrets(this).defaults;
     if (updates.length) Assign(current, ...updates);
     return Copy(current);
+    return Deco(this, { defaults: current });
   }
 };
 
@@ -113,8 +132,9 @@ const Deco = module.exports = function Deco (...decorators) {
   // A factory function for creating new instances of the "class."
   const factory = function factory (...parameters) {
     /* eslint-disable no-invalid-this */
-    const create = () => Reflect.construct(ƒ, parameters, factory);
     const ƒ = factory.prototype.constructor;
+
+    const create = () => Reflect.construct(ƒ, parameters, factory);
 
     // When called as e.g. `Factory()`.
     if (!this) return create();
@@ -129,19 +149,18 @@ const Deco = module.exports = function Deco (...decorators) {
     // prototype properties and run the object through the constructor chain
     // manually.
     Assign(this, factory.prototype);
-    return Reflect.apply(ƒ, this, parameters);
+    return ƒ.apply(this, parameters);
     /* eslint-enable no-invalid-this */
   };
 
   // Set up the factory prototype, statics, and constructor,
   // then apply the given decorators.
   setPrototype(factory, Object.create(Deco.prototype));
-  initializeConstructor(factory);
-  Assign(factory, statics);
+  initialize(factory);
   concatenate(factory, ...decorators);
 
   Object.freeze(factory);
-  Object.freeze(factory.prototype); // TODO // set prototype parent to first constructor?
+  Object.freeze(factory.prototype);
 
   return factory;
 };
