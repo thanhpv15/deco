@@ -67,11 +67,13 @@ const concatenateConstructors = (factory, ...decorators) => {
 //
 const concatenateDefaults = (factory, ...decorators) => {
   Assign(secrets(factory).defaults, ...decorators.map((decorator) => {
+    const defaults = secrets(decorator).defaults;
+    if (Reflect.ownKeys(defaults).length) return defaults;
     if (Reflect.hasOwnProperty.call(decorator, 'defaults')) {
       return decorator.defaults;
     }
     return undefined;
-  }));
+  }).filter((a) => a));
 };
 //
 const concatenatePrototypes = (factory, ...decorators) => {
@@ -110,9 +112,7 @@ const initialize = (factory) => {
   /* eslint-disable no-use-before-define */
   const statics = {
     defaults (...updates) {
-      return Deco(this, {
-        defaults: Copy(secrets(this).defaults, ...updates)
-      });
+      return Deco(this, ...updates.map((o) => ({ defaults: o })));
     }
   };
   /* eslint-enable no-use-before-define */
