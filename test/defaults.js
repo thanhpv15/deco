@@ -23,4 +23,18 @@ describe('Deco', () => {
 
     Factory({ b: 2, yoyo: 3 });
   });
+
+  it('allows a developer to get a new class with given defaults', (done) => {
+    const Factory1 = Deco({ defaults: { a: 1, yoyo: 4 }});
+    const Factory2 = Factory1.defaults({ a: 2, b: 2 });
+    const Factory3 = Deco(Factory2, {
+      constructor (given) {
+        const options = this.defaults(given);
+        expect(options).to.equal({ a: 2, b: 2, yoyo: 4 });
+        done();
+      }
+    });
+
+    Factory3();
+  });
 });

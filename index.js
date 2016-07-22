@@ -110,9 +110,9 @@ const initialize = (factory) => {
   /* eslint-disable no-use-before-define */
   const statics = {
     defaults (...updates) {
-      const current = secrets(this).defaults;
-      if (updates.length) Assign(current, ...updates);
-      return Deco(this, { defaults: current });
+      return Deco(this, {
+        defaults: Copy(secrets(this).defaults, ...updates)
+      });
     }
   };
   /* eslint-enable no-use-before-define */
