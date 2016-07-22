@@ -35,8 +35,6 @@ describe('Deco', () => {
     const o = Factory();
     expect(o).not.to.be.an.instanceof(Factory);
     expect(o).not.to.be.an.instanceof(Object);
-    expect(o).not.to.be.an.instanceof(Parent1);
-    expect(o).not.to.be.an.instanceof(Parent2);
 
     done();
   });

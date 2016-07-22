@@ -33,8 +33,7 @@ const secrets = Bursary({
   constructors: Array,
   defaults: Object
 });
-// Set `prototype` and `__proto__` for the given object.
-// Note: this may be redundant when v8 bug is fixed see: http://... TODO
+// Set `prototype` property and the actual prototype for the given object.
 const setPrototype = (o, prototype) => {
   o.prototype = prototype;
   Reflect.setPrototypeOf(o, prototype);
@@ -173,10 +172,9 @@ const Deco = module.exports = function Deco (...decorators) {
 
 // Set up Deco's prototype.  The factory will cause most created objects
 // to inherit from Deco.
-setPrototype(Deco, () => {});
+setPrototype(Deco, Object.create(Function.prototype));
 
 //    ## Deco Public Methods
-
 //
 Deco.defaults = (options, ...updates) => {
   return Copy(options, ...updates);
