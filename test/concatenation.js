@@ -14,7 +14,7 @@ const expect = Code.expect;
 const it = Lab.it;
 const meaningOfLife = 42;
 const pathToDecorators = Path.join(__dirname, '/decorators');
-const testModuleCount = 5;
+const testModuleCount = 6;
 
 describe('Deco', () => {
   it('concatenates a series of decorators', (done) => {
