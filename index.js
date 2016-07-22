@@ -5,12 +5,18 @@
 const Assign = require('copy-properties/assign');
 const Bursary = require('bursary');
 const CallerPath = require('caller-path');
+const Copy = require('copy-properties/copy');
 const Fs = require('fs');
 const Path = require('path');
 
 //    ## Utility Functions
-
-const flatten = (a) => a; // TODO
+// Calculate the prototype chain of a given prototype.
+const chain = (prototype) => {
+  if (!prototype) return [];
+  return [ prototype, ...chain(Reflect.getPrototypeOf(prototype)) ];
+};
+// Copy all methods from a given prototype's chain into one object.
+const flatten = (prototype) => Copy(...chain(prototype).reverse());
 // Check if the given value is a class.
 const isClass = (a) => {
   if (!isFunction(a)) return false;
@@ -18,7 +24,7 @@ const isClass = (a) => {
   if (a.toString().indexOf('class') !== 0) return false;
   return true;
 };
-// Check if the given valye is a function.
+// Check if the given value is a function.
 const isFunction = (a) => typeof a === 'function';
 // constructors stores the initialization methods for each factory
 //   function created with Deco.
@@ -118,7 +124,7 @@ const statics = {
     const current = secrets(this).defaults;
     if (updates.length) Assign(current, ...updates);
     return Copy(current);
-    return Deco(this, { defaults: current });
+    return Deco(this, { defaults: current }); // TODO // ?
   }
 };
 
