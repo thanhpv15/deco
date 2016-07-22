@@ -184,8 +184,6 @@ const Deco = module.exports = function Deco (...decorators) {
 setPrototype(Deco, Object.create(Function.prototype));
 
 //    ## Deco Public Methods
-// Apply defaults to options.
-Deco.copy = (options, ...updates) => Copy(options, ...updates);
 // Allow a way for instances to store private data.
 Deco.hidden = (definition) => Bursary(definition);
 // Load and apply decorators from the caller's directory.
