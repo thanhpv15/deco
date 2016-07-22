@@ -2,28 +2,21 @@
 
 //    # Deco 2
 
+//    ## Dependencies
+
 const Assign = require('copy-properties/assign');
 const Bursary = require('bursary');
 const CallerPath = require('caller-path');
 const Copy = require('copy-properties/copy');
 const Fs = require('fs');
 const Path = require('path');
+const PrototypeTool = require('./prototype-tool');
 
 //    ## Utility Functions
-// Check if the given value is a function.
-const isFunction = (a) => typeof a === 'function';
-
-// Calculate the prototype chain of a given prototype.
-const chain = (prototype) => {
-  if (!prototype) return [];
-  return [ prototype, ...chain(Reflect.getPrototypeOf(prototype)) ];
-};
-// Copy all methods from a given prototype's chain into one object.
-const flatten = (prototype) => Copy(...chain(prototype).reverse());
+// Identity function.
+const identity = (a) => a;
 // Check if the given value is a class.
 const isClass = (a) => {
-  if (!isFunction(a)) return false;
-  if (!Reflect.ownKeys(a).includes('prototype')) return false;
   if (a.toString().indexOf('class') !== 0) return false;
   return true;
 };
@@ -34,15 +27,6 @@ const secrets = Bursary({
   constructors: Array,
   defaults: Object
 });
-// Set `prototype` property and the actual prototype for the given object.
-const setPrototype = (o, prototype) => {
-  o.prototype = prototype;
-  Reflect.setPrototypeOf(o, prototype);
-};
-// Symbols used internally.
-const symbols = {
-  isClassWrapper: Symbol('isClassWrapper')
-};
 
 //    ## Factory Private Static Members
 // Constructors that will be applied sequentially to newly created instances.
@@ -52,19 +36,17 @@ const concatenateConstructors = (factory, ...decorators) => {
     if (Reflect.hasOwnProperty.call(decorator, 'constructor')) {
       return decorator.constructor;
     }
-    if (isFunction(decorator) && !isClass(decorator)) {
+    if (typeof decorator === 'function' && !isClass(decorator)) {
       if (!decorator.prototype) return decorator;
       return decorator.prototype.constructor;
     }
     if (isClass(decorator)) {
-      const ƒ = (...parameters) => Reflect.construct(decorator, parameters);
-      ƒ[symbols.isClassWrapper] = true;
-      return ƒ;
+      return (...parameters) => Reflect.construct(decorator, parameters);
     }
     return undefined;
-  }).filter((a) => a));
+  }).filter(identity));
 };
-//
+// Merge any defaults of the given decorators into this factory's defaults.
 const concatenateDefaults = (factory, ...decorators) => {
   Assign(secrets(factory).defaults, ...decorators.map((decorator) => {
     const defaults = secrets(decorator).defaults;
@@ -73,12 +55,15 @@ const concatenateDefaults = (factory, ...decorators) => {
       return decorator.defaults;
     }
     return undefined;
-  }).filter((a) => a));
+  }).filter(identity));
 };
-//
+// Concatenate the flattened prototype chain of the given decorators
+// to the factory prototype.
 const concatenatePrototypes = (factory, ...decorators) => {
-  Assign(factory.prototype, ...decorators.map((decorator) =>
-    isFunction(decorator) ? flatten(decorator.prototype) : decorator));
+  Assign(factory.prototype, ...decorators.map((decorator) => {
+    if (typeof decorator !== 'function') return decorator;
+    return PrototypeTool.flatten(decorator.prototype);
+  }).filter(identity));
 };
 // Use assignment based inheritence to mix in members from objects, vanilla
 // JavaScript constructors, and/or Deco decorators.
@@ -89,7 +74,8 @@ const concatenate = (factory, ...decorators) => {
 };
 // Create and assign the constructor to the given factory prototype.
 const initialize = (factory) => {
-  const members = {
+  // Public instance members
+  const instance = {
     constructor: function factoryConstructor (...parameters) {
       /* eslint-disable no-invalid-this */
       const constructors = secrets(factory).constructors;
@@ -109,6 +95,7 @@ const initialize = (factory) => {
     }
   };
 
+  // Public static members
   /* eslint-disable no-use-before-define */
   const statics = {
     defaults (...updates) {
@@ -117,15 +104,17 @@ const initialize = (factory) => {
   };
   /* eslint-enable no-use-before-define */
 
-  for (const name of Reflect.ownKeys(members)) {
+  // Apply public instance members to the factory prototype.
+  for (const name of Reflect.ownKeys(instance)) {
     Reflect.defineProperty(factory.prototype, name, {
       configurable: true,
       enumerable: false,
-      value: members[name],
+      value: instance[name],
       writable: true
     });
   }
 
+  // Apply public static members to the factory.
   for (const name of Reflect.ownKeys(statics)) {
     Reflect.defineProperty(factory, name, {
       configurable: true,
@@ -169,10 +158,11 @@ const Deco = module.exports = function Deco (...decorators) {
 
   // Set up the factory prototype, statics, and constructor,
   // then apply the given decorators.
-  setPrototype(factory, Object.create(Deco.prototype));
+  PrototypeTool.set(factory, Deco);
   initialize(factory);
-  concatenate(factory, ...decorators);
+  concatenate(factory, ...decorators.filter(identity));
 
+  // Make the factory immutable.
   Object.freeze(factory);
   Object.freeze(factory.prototype);
 
@@ -181,7 +171,7 @@ const Deco = module.exports = function Deco (...decorators) {
 
 // Set up Deco's prototype.  The factory will cause most created objects
 // to inherit from Deco.
-setPrototype(Deco, Object.create(Function.prototype));
+PrototypeTool.set(Deco, Function);
 
 //    ## Deco Public Methods
 // Allow a way for instances to store private data.
@@ -192,10 +182,8 @@ Deco.load = (...files) => {
   return Deco.loadFrom(directory, ...files);
 };
 // Load and apply decorators from a directory.
-Deco.loadFrom = (directory, ...files) => {
-  const factory = Deco(...Deco.requireFrom(directory, ...files));
-  return factory;
-};
+Deco.loadFrom = (directory, ...files) =>
+  Deco(...Deco.requireFrom(directory, ...files));
 // Require all files in the caller's directory.
 Deco.require = (...files) => {
   const directory = Path.dirname(CallerPath());
@@ -215,6 +203,3 @@ Deco.requireFrom = (directory, ...files) => {
   return notIndex.map((file) => require(Path.resolve(directory, file)));
   /* eslint-enable global-require */
 };
-
-Object.freeze(Deco);
-Object.freeze(Deco.prototype);
