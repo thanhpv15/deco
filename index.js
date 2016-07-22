@@ -44,13 +44,11 @@ const symbols = {
 };
 
 //    ## Factory Private Static Members
-
-// Use assignment based inheritence to mix in members from objects, vanilla
-// JavaScript constructors, and/or Deco decorators.
-const concatenate = (factory, ...decorators) => {
-  // Merge constructors
-  mergeConstructors(factory, ...decorators.map((decorator) => {
-    if (Reflect.hasOwnProperty.call(decorator, 'constructor')) { // TODO // move to mergeC?
+// Constructors that will be applied sequentially to newly created instances.
+const concatenateConstructors = (factory, ...decorators) => {
+  const constructors = secrets(factory).constructors;
+  constructors.push(...decorators.map((decorator) => {
+    if (Reflect.hasOwnProperty.call(decorator, 'constructor')) {
       return decorator.constructor;
     }
     if (isFunction(decorator) && !isClass(decorator)) {
@@ -63,19 +61,28 @@ const concatenate = (factory, ...decorators) => {
       return ƒ;
     }
     return undefined;
-  }));
-
-  // Merge defaults
+  }).filter((a) => a));
+};
+//
+const concatenateDefaults = (factory, ...decorators) => {
   Assign(secrets(factory).defaults, ...decorators.map((decorator) => {
     if (Reflect.hasOwnProperty.call(decorator, 'defaults')) {
       return decorator.defaults;
     }
     return undefined;
   }));
-
-  // Merge prototypes
+};
+//
+const concatenatePrototypes = (factory, ...decorators) => {
   Assign(factory.prototype, ...decorators.map((decorator) =>
     isFunction(decorator) ? flatten(decorator.prototype) : decorator));
+};
+// Use assignment based inheritence to mix in members from objects, vanilla
+// JavaScript constructors, and/or Deco decorators.
+const concatenate = (factory, ...decorators) => {
+  concatenateConstructors(factory, ...decorators);
+  concatenateDefaults(factory, ...decorators);
+  concatenatePrototypes(factory, ...decorators);
 };
 // Create and assign the constructor to the given factory prototype.
 const initialize = (factory) => {
@@ -110,11 +117,6 @@ const initialize = (factory) => {
 
   Assign(factory, statics); // TODO // enumerability
 };
-// Constructors that will be applied sequentially to newly created instances.
-const mergeConstructors = (factory, ...updates) => {
-  const constructors = secrets(factory).constructors;
-  constructors.push(...updates.filter((a) => a));
-};
 
 //    ## Public Static Factory Members
 
@@ -123,7 +125,7 @@ const statics = {
     const current = secrets(this).defaults;
     if (updates.length) Assign(current, ...updates);
     return Copy(current);
-    return Deco(this, { defaults: current }); // TODO // ?
+    // TODO // return Deco(this, { defaults: current });
   }
 };
 
@@ -175,10 +177,10 @@ const Deco = module.exports = function Deco (...decorators) {
 setPrototype(Deco, Object.create(Function.prototype));
 
 //    ## Deco Public Methods
-//
-Deco.defaults = (options, ...updates) => {
-  return Copy(options, ...updates);
-};
+// Apply defaults to options.
+Deco.copy = (options, ...updates) => Copy(options, ...updates);
+// Allow a way for instances to store private data.
+Deco.hidden = (definition) => Bursary(definition);
 // Load and apply decorators from the caller's directory.
 Deco.load = (...files) => {
   const directory = Path.dirname(CallerPath());
@@ -203,8 +205,6 @@ Deco.requireFrom = (directory, ...files) => {
   return files.map((file) => require(Path.resolve(directory, file)));
   /* eslint-enable global-require */
 };
-// Allow a way for instances to store private data.
-Deco.hidden = (definition) => Bursary(definition);
 
 Object.freeze(Deco);
 Object.freeze(Deco.prototype);
