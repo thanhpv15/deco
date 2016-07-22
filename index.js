@@ -106,6 +106,15 @@ const initialize = (factory) => {
     }
   };
 
+  for (const name of Reflect.ownKeys(statics)) {
+    Reflect.defineProperty(factory, name, {
+      configurable: true,
+      enumerable: false,
+      value: statics[name],
+      writable: true
+    });
+  }
+
   for (const name of Reflect.ownKeys(members)) {
     Reflect.defineProperty(factory.prototype, name, {
       configurable: true,
@@ -114,8 +123,6 @@ const initialize = (factory) => {
       writable: true
     });
   }
-
-  Assign(factory, statics); // TODO // enumerability
 };
 
 //    ## Public Static Factory Members
@@ -124,8 +131,7 @@ const statics = {
   defaults (...updates) {
     const current = secrets(this).defaults;
     if (updates.length) Assign(current, ...updates);
-    return Copy(current);
-    // TODO // return Deco(this, { defaults: current });
+    return Deco(this, { defaults: current });
   }
 };
 
@@ -200,9 +206,14 @@ Deco.require = (...files) => {
 //  to be loaded.
 Deco.requireFrom = (directory, ...files) => {
   /* eslint-disable global-require */
-  // TODO // leave out index.js or any other files?  Glance over requireindex code.
   if (!files.length) files.push(...Fs.readdirSync(directory));
-  return files.map((file) => require(Path.resolve(directory, file)));
+  const notIndex = files.filter((file) => {
+    if (file === 'index.js') return false;
+    if (file === 'index.json') return false;
+    if (file === 'index.node') return false;
+    return true;
+  });
+  return notIndex.map((file) => require(Path.resolve(directory, file)));
   /* eslint-enable global-require */
 };
 

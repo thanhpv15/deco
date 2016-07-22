@@ -106,11 +106,14 @@ describe('Deco', () => {
   });
 
   it('concatenates properties with private data', (done) => {
-    const hidden = Deco.hidden(); // TODO // turn order back on
+    const hidden = Deco.hidden();
 
     const Factory = Deco({
       get masonic () { return hidden(this).masonic },
-      set masonic (a) { return hidden(this).masonic = a }
+      set masonic (a) {
+        hidden(this).masonic = a;
+        return this.masonic;
+      }
     });
     const o1 = Factory();
     const o2 = Factory();
