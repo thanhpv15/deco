@@ -10,6 +10,9 @@ const Fs = require('fs');
 const Path = require('path');
 
 //    ## Utility Functions
+// Check if the given value is a function.
+const isFunction = (a) => typeof a === 'function';
+
 // Calculate the prototype chain of a given prototype.
 const chain = (prototype) => {
   if (!prototype) return [];
@@ -24,8 +27,6 @@ const isClass = (a) => {
   if (a.toString().indexOf('class') !== 0) return false;
   return true;
 };
-// Check if the given value is a function.
-const isFunction = (a) => typeof a === 'function';
 // constructors stores the initialization methods for each factory
 //   function created with Deco.
 // defaults stores the defaults associated with a Deco factory.
@@ -106,14 +107,15 @@ const initialize = (factory) => {
     }
   };
 
-  for (const name of Reflect.ownKeys(statics)) {
-    Reflect.defineProperty(factory, name, {
-      configurable: true,
-      enumerable: false,
-      value: statics[name],
-      writable: true
-    });
-  }
+  /* eslint-disable no-use-before-define */
+  const statics = {
+    defaults (...updates) {
+      const current = secrets(this).defaults;
+      if (updates.length) Assign(current, ...updates);
+      return Deco(this, { defaults: current });
+    }
+  };
+  /* eslint-enable no-use-before-define */
 
   for (const name of Reflect.ownKeys(members)) {
     Reflect.defineProperty(factory.prototype, name, {
@@ -123,15 +125,14 @@ const initialize = (factory) => {
       writable: true
     });
   }
-};
 
-//    ## Public Static Factory Members
-
-const statics = {
-  defaults (...updates) {
-    const current = secrets(this).defaults;
-    if (updates.length) Assign(current, ...updates);
-    return Deco(this, { defaults: current });
+  for (const name of Reflect.ownKeys(statics)) {
+    Reflect.defineProperty(factory, name, {
+      configurable: true,
+      enumerable: false,
+      value: statics[name],
+      writable: true
+    });
   }
 };
 
