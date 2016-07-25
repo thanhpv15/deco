@@ -1,9 +1,8 @@
-/* eslint-disable literate/comment-coverage */
-
 'use strict';
 
 const Code = require('code');
 const Deco = require('..');
+const TestMarkdown = require('@kunio/test-markdown');
 const Lab = module.exports.lab = require('lab').script();
 
 const describe = Lab.describe;
@@ -11,6 +10,10 @@ const expect = Code.expect;
 const it = Lab.it;
 
 describe('Deco', () => {
+  it('has executable code in the README file', () => TestMarkdown({
+    aliases: { deco: '.' }
+  }));
+
   it('sets constructor on created objects', (done) => {
     const Factory = Deco();
     const o = Factory();

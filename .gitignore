@@ -7,6 +7,7 @@
 *.gz
 
 .idea.js
+docs
 lib-cov
 logs
 node_modules

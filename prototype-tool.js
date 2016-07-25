@@ -4,7 +4,7 @@
 
 //    ## Dependencies
 
-const Copy = require('copy-properties/copy');
+const Clone = require('@kunio/d/clone');
 
 //    ## Module Definition
 
@@ -17,13 +17,10 @@ const chain = (prototype) => {
 };
 
 // Copy all methods from a given prototype's chain into one object.
-PrototypeTool.flatten = (prototype) => Copy(...chain(prototype).reverse());
+PrototypeTool.flatten = (prototype) => Clone(...chain(prototype).reverse());
 // Set `prototype` property and the actual prototype for the given object.
 PrototypeTool.set = (o, C) => {
   const prototype = Object.create(C.prototype);
   o.prototype = prototype;
   Reflect.setPrototypeOf(o, prototype);
 };
-
-// TODO // Literate documentation
-// TODO // Comment style

@@ -4,10 +4,12 @@
   "description": "Compose modular decorators to build constructors.  Your Node.js code will never have been as organized, reusable, and pluggable.",
   "main": "index.js",
   "scripts": {
+    "documentation": "docco *.js",
     "lint": "eslint --fix .",
     "test": "npm-run-all test:*",
-    "test:code": "lab --coverage --threshold 100 --lint --lint-fix",
-    "test:readme": "markscript README.md"
+    "test:code": "lab --coverage --threshold 100",
+    "test:lint": "eslint .",
+    "test:markdown": "remark ."
   },
   "repository": {
     "type": "git",
@@ -25,15 +27,32 @@
   "author": "William Riley-Land",
   "license": "MIT",
   "dependencies": {
+    "@kunio/d": "^1.0.0",
     "bursary": "^3.0.0"
   },
   "devDependencies": {
+    "@kunio/eslint-plugin-style": "^2.0.0",
+    "@kunio/test-markdown": "^1.0.1",
     "code": "^3.0.1",
+    "docco": "^0.7.0",
     "eslint": "^3.0.1",
-    "eslint-plugin-hapi": "^4.0.0",
-    "eslint-plugin-literate": "^1.0.0",
     "lab": "^10.8.2",
-    "markscript": "wprl/markscript#693a76c82d9de59c4ad97375a5f8882d305c7fff",
-    "npm-run-all": "^2.3.0"
+    "npm-run-all": "^2.3.0",
+    "remark-cli": "^1.0.0",
+    "remark-lint": "^4.0.2"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@kunio/style"
+    ],
+    "extends": "plugin:@kunio/style/guide"
+  },
+  "remarkConfig": {
+    "output": true,
+    "plugins": {
+      "lint": {
+        "maximum-line-length": false
+      }
+    }
   }
 }

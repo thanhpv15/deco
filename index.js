@@ -4,10 +4,9 @@
 
 //    ## Dependencies
 
-const Assign = require('copy-properties/assign');
 const Bursary = require('bursary');
 const CallerPath = require('caller-path');
-const Copy = require('copy-properties/copy');
+const D = require('@kunio/d');
 const Fs = require('fs');
 const Path = require('path');
 const PrototypeTool = require('./prototype-tool');
@@ -48,7 +47,7 @@ const concatenateConstructors = (factory, ...decorators) => {
 };
 // Merge any defaults of the given decorators into this factory's defaults.
 const concatenateDefaults = (factory, ...decorators) => {
-  Assign(secrets(factory).defaults, ...decorators.map((decorator) => {
+  D.assign(secrets(factory).defaults, ...decorators.map((decorator) => {
     const defaults = secrets(decorator).defaults;
     if (Reflect.ownKeys(defaults).length) return defaults;
     if (Reflect.hasOwnProperty.call(decorator, 'defaults')) {
@@ -60,7 +59,7 @@ const concatenateDefaults = (factory, ...decorators) => {
 // Concatenate the flattened prototype chain of the given decorators
 // to the factory prototype.
 const concatenatePrototypes = (factory, ...decorators) => {
-  Assign(factory.prototype, ...decorators.map((decorator) => {
+  D.assign(factory.prototype, ...decorators.map((decorator) => {
     if (typeof decorator !== 'function') return decorator;
     return PrototypeTool.flatten(decorator.prototype);
   }).filter(identity));
@@ -85,13 +84,13 @@ const initialize = (factory) => {
         const next = ƒ.apply(o, parameters);
         if (next === undefined) return o;
         if (next === o) return o;
-        Assign(next, factory.prototype);
+        D.assign(next, factory.prototype);
         return next;
       }, this);
       /* eslint-enable no-invalid-this */
     },
     defaults (...updates) {
-      return Copy(secrets(factory).defaults, ...updates);
+      return D.clone(secrets(factory).defaults, ...updates);
     }
   };
 
@@ -151,7 +150,7 @@ const Deco = module.exports = function Deco (...decorators) {
     // If the decorator is called directly, e.g. `Factory.call(o)`, assign the
     // prototype properties and run the object through the constructor chain
     // manually.
-    Assign(this, factory.prototype);
+    D.assign(this, factory.prototype);
     return ƒ.apply(this, parameters);
     /* eslint-enable no-invalid-this */
   };
