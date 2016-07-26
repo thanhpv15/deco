@@ -130,4 +130,10 @@ describe('Deco', () => {
 
     done();
   });
+
+  it('does not try to overwrite properties that cannot be replaced', (done) => {
+      const Factory1 = Deco(function () {});
+      const Factory2 = Deco(Factory1, function () {});
+      done();
+  });
 });
