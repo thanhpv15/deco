@@ -9,10 +9,9 @@
   },
   "scripts": {
     "documentation": "docco *.js",
-    "lint": "eslint --fix .",
     "test": "npm-run-all test:*",
     "test:code": "lab --coverage --threshold 100",
-    "test:lint": "eslint .",
+    "test:lint": "eslint --fix .",
     "test:markdown": "remark ."
   },
   "repository": {
