@@ -4,10 +4,11 @@ Compose modular decorators to build factories.  You're Node.js code will never h
 
 ## Summary
 
--   Compose decorators, classes, factories, etc. into new factory functions
--   Build factories in a way similar to partial classes
--   Use es5 & es6 classes as decorators
--   Class-like factories while avoiding problematic classical concepts like `new`, `super`, and `extends`.
+-   Provides class-like factories while avoiding problematic classical concepts like `new`, `super`, and `extends`.
+-   Compose decorators, factory functions, objects, and even ES6 classes with one simple interface.
+-   Write code in a style similar to partial classes.
+-   Optionally, set default options for each class.
+-   Easily create properties that use private data internally.
 
 ## Usage Overview
 
@@ -61,6 +62,8 @@ expect(Composed2().artist).to.equal('busy signal');
 expect(Composed2().genre).to.equal('reggae');
 ```
 
+Use `Deco.load` instead of `loadFrom` to load the current directory.
+
 Deco.js factories are themselves decorators!  Use them to group decorators for use in other factories, or call them directly on existing objects.
 
 ```javascript
@@ -72,6 +75,7 @@ expect(Another().genre).to.equal('reggae');
 
 const existing = { a: 1, b: 2, c: 3 };
 Another.call(existing);
+
 expect(existing.a).to.equal(1);
 expect(existing.b).to.equal(2);
 expect(existing.c).to.equal(3);
@@ -79,12 +83,87 @@ expect(existing.artist).to.equal('busy signal');
 expect(existing.genre).to.equal('reggae');
 ```
 
-You can have factories create objects of other instances.
+You can have factories create objects of other instances by passing in a constructor that returns an object.
 
 ```javascript
 const ErrorFactory = Deco(Error);
 expect(ErrorFactory()).to.be.an.instanceof(Error);
+
+// or...
+
+const OtherFactory = Deco(() => ({ a: 1 }));
+const other = OtherFactory();
+expect(other.a).to.equal(1);
+
+// and even...
+
+const C = class {
+  ƒ () { return 1 }
+};
+
+const CompatibleFactory = Deco(C, {
+  g () { return 2 }
+});
+
+const xyz = CompatibleFactory();
+
+expect(xyz).to.be.an.instanceof(C);
+expect(xyz.ƒ()).to.equal(1);
+expect(xyz.g()).to.equal(2);
+
+// or all at once...
+
+const AllAtOnce = Deco(C, CompatibleFactory, function () { this.x = 'y' }, { z: 100 });
+const all = AllAtOnce();
+expect(all).to.be.an.instanceof(C);
+expect(all.ƒ()).to.equal(1);
+expect(all.g()).to.equal(2);
+expect(all.x).to.equal('y');
+expect(all.z).to.equal(100);
 ```
+
+Defaults
+
+```javascript
+const FactoryWithDefaults = Deco({
+  constructor (given) {
+    const options = this.defaults(given);
+    expect(options).to.equal({ a: 1, b: 2, yoyo: 3 });
+  },
+  defaults: { a: 1, yoyo: 4 }
+});
+
+FactoryWithDefaults({ b: 2, yoyo: 3 });
+
+const Factory1 = Deco({ defaults: { a: 1, yoyo: 4 }});
+const Factory2 = Factory1.defaults({ a: 2, b: 2 });
+const Factory3 = Deco(Factory2, {
+  constructor () {
+    expect(this.defaults()).to.equal({ a: 2, b: 2, yoyo: 4 });
+  }
+});
+
+```
+
+Properties
+
+```javascript
+const hidden = Deco.hidden();
+
+const FactoryWithSecrets = Deco({
+  get masonic () { return hidden(this).masonic },
+  set masonic (a) {
+    hidden(this).masonic = a + 1;
+    return this.masonic;
+  }
+});
+const o1 = FactoryWithSecrets();
+expect(o1.masonic).to.equal(undefined);
+o1.masonic = 1;
+expect(o1.masonic).to.equal(2);
+```
+
+
 
 ## Contact
 
