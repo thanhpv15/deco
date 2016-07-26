@@ -1,8 +1,8 @@
 'use strict';
 
-//    # Deco 2
+// # Deco 2
 
-//    ## Dependencies
+// ## Dependencies
 
 const Bursary = require('bursary');
 const CallerPath = require('caller-path');
@@ -11,7 +11,8 @@ const Fs = require('fs');
 const Path = require('path');
 const PrototypeTool = require('./prototype-tool');
 
-//    ## Utility Functions
+// ## Utility Functions
+//
 // Identity function.
 const identity = (a) => a;
 // Check if the given value is a class.
@@ -27,8 +28,10 @@ const secrets = Bursary({
   defaults: Object
 });
 
-//    ## Factory Private Static Members
-// Constructors that will be applied sequentially to newly created instances.
+// ## Factory Private Static Members
+//
+// Constructors that will be applied sequentially to newly
+// created instances.
 const concatenateConstructors = (factory, ...decorators) => {
   const constructors = secrets(factory).constructors;
   constructors.push(...decorators.map((decorator) => {
@@ -73,7 +76,7 @@ const concatenate = (factory, ...decorators) => {
 };
 // Create and assign the constructor to the given factory prototype.
 const initialize = (factory) => {
-  // Public instance members
+  // ### Public instance members
   const instance = {
     constructor: function factoryConstructor (...parameters) {
       /* eslint-disable no-invalid-this */
@@ -94,7 +97,7 @@ const initialize = (factory) => {
     }
   };
 
-  // Public static members
+  // ### Public static members
   /* eslint-disable no-use-before-define */
   const statics = {
     defaults (...updates) {
@@ -124,11 +127,11 @@ const initialize = (factory) => {
   }
 };
 
-//    ## Module Definition
+// ## Module Definition
 //
-//    A function used to create factory functions (*classes*) by mixing in any
-//    number of objects and/or vanilla JavaScript classes.  Deco factories
-//    themselves can be passed in as a decorator to another call to `Deco()`.
+// A function used to create factory functions (*classes*) by mixing in any
+// number of objects and/or vanilla JavaScript classes.  Deco factories
+// themselves can be passed in as a decorator to another call to `Deco()`.
 
 const Deco = module.exports = function Deco (...decorators) {
   // A factory function for creating new instances of the "class."
@@ -172,7 +175,7 @@ const Deco = module.exports = function Deco (...decorators) {
 // to inherit from Deco.
 PrototypeTool.set(Deco, Function);
 
-//    ## Deco Public Methods
+// ## Deco Public Methods
 // Allow a way for instances to store private data.
 Deco.hidden = (definition) => Bursary(definition);
 // Load and apply decorators from the caller's directory.
@@ -189,7 +192,7 @@ Deco.require = (...files) => {
   return Deco.requireFrom(directory, ...files);
 };
 // Require a directory, optionally specify names/order of the files
-//  to be loaded.
+// to be loaded.
 Deco.requireFrom = (directory, ...files) => {
   /* eslint-disable global-require */
   if (!files.length) files.push(...Fs.readdirSync(directory));
