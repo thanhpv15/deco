@@ -131,9 +131,12 @@ describe('Deco', () => {
     done();
   });
 
-  it('does not try to overwrite properties that cannot be replaced', (done) => {
-      const Factory1 = Deco(function () {});
-      const Factory2 = Deco(Factory1, function () {});
-      done();
+  it("doesn't try to overwrite properties that cannot be replaced", (done) => {
+    /* eslint-disable prefer-arrow-callback */
+    const Factory1 = Deco(function abc () {});
+    const Factory2 = Deco(Factory1, function xyz () {});
+    /* eslint-enable prefer-arrow-callback */
+    Factory2();
+    done();
   });
 });

@@ -4,7 +4,6 @@
 
 [![NPM](https://nodei.co/npm/deco.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/deco/)
 
-
 Compose modular decorators to build factories.  You're Node.js code will never have been as organized, reusable, and pluggable.
 
 ## Summary
@@ -147,7 +146,6 @@ const Factory3 = Deco(Factory2, {
     expect(this.defaults()).to.equal({ a: 2, b: 2, yoyo: 4 });
   }
 });
-
 ```
 
 Properties
@@ -167,8 +165,6 @@ expect(o1.masonic).to.equal(undefined);
 o1.masonic = 1;
 expect(o1.masonic).to.equal(2);
 ```
-
-
 
 ## Contact
 
