@@ -4,41 +4,63 @@
 
 ![NPM](https://nodei.co/npm/deco.png?downloads=true&downloadRank=true&stars=true)
 
-Compose modular decorators to build factories.  You're Node.js code will never have been as organized, reusable, and pluggable.
+Composable decorators for ES6.  You're Node.js code will never have been as organized, reusable, and pluggable.
 
 ## Summary
 
--   Provides class-like factories while avoiding problematic classical concepts like `new`, `super`, and `extends`.
--   Compose decorators, factory functions, objects, and even ES6 classes with one simple interface.
+-   Provides class-like decorators and factories while avoiding problematic classical concepts like `new`, `super`, `extends`, and `instanceof`.
+-   Compose objects, factory functions, ES5 constructors, and/or ES6 classes with one simple interface.
 -   Write code in a style similar to partial classes.
 -   Optionally, set default options for each class.
 -   Easily create properties that use private data internally.
 
 ## Usage Overview
 
-The main functionality is provided by the `deco()` function.  It builds factories.
+The main functionality is provided by the `deco()` function.  It is used to compose decorators.
+
+Decorators are defined when they are built.  They are immutable.
 
 ```javascript
 const Deco = require('deco');
 
-const Factory = Deco();
-const o = Factory();
+const Decorator = Deco({
+  ƒ () { return 4 }
+});
 ```
 
-Decorators can be defined when the factory is built.  Custom constructor logic can be supplied.
+Decorators can decorate existing objects.
+
+```javascript
+const existing = {
+  g () { return 5 }
+};
+
+Decorator.call(existing);
+expect(existing.ƒ()).to.equal(4);
+expect(existing.g()).to.equal(5);
+```
+
+Decorators can be used as factories.  Factories are functions that create objects but don't require using the `new` keyword.
+
+```javascript
+const o = Decorator();
+expect(o.ƒ()).to.equal(4);
+```
+
+Custom constructor logic can be supplied.
 
 ```javascript
 const Beer = Deco({
   constructor () {
-    this.created = new Date();
+    this.created = Date.now();
   }
 });
 
 const pint = Beer();
-expect(pint.created).to.be.an.instanceof(Date);
+expect(pint.created).to.be.above(1469655052201);
 ```
 
-Factories can be used as decorators
+Decorators can be composed into new decorators:
 
 ```javascript
 const Lager = Deco(Beer, {
@@ -46,57 +68,54 @@ const Lager = Deco(Beer, {
 });
 
 const drink = Lager();
-expect(drink.created).to.be.an.instanceof(Date);
+expect(drink.created).to.be.above(1469655052201);
 expect(drink.fermentation()).to.equal('bottom');
 ```
 
-Load a directory of decorator files into a constructor by sending in a path.
+Decorators execute the constructors of composed definitions sequentially.
+
+```javascript
+const TastyBeer = Deco(Beer, {
+  constructor () {
+    this.tasted = this.created + 86400000;
+  }
+});
+expect(drink.created).to.be.above(1469655052201);
+expect(drink.tasted).to.be.above(1469741452201);
+```
+
+### Partials / Loading from File
+
+A directory of decorator files can be composed into a single decorator handily.
 
 ```javascript
 const Composed1 = Deco.loadFrom('./test/decorators');
-expect(Composed1().artist).to.equal('busy signal');
-expect(Composed1().genre).to.equal('reggae');
+expect(Composed1().flavor).to.equal('bitter');
+expect(Composed1().type).to.equal('liqueur');
 ```
 
-Or to load specific files in a specific order:
+Specific files can be loaded from the directory in a specified order.
 
 ```javascript
-const Composed2 = Deco.loadFrom('./test/decorators', 'd1', 'd2');
-expect(Composed2().artist).to.equal('busy signal');
-expect(Composed2().genre).to.equal('reggae');
+const Composed2 = Deco.loadFrom('./test/decorators', 'd2', 'd1');
+expect(Composed2().flavor).to.equal('bitter');
+expect(Composed2().type).to.equal('liqueur');
 ```
 
-Use `Deco.load` instead of `loadFrom` to load the current directory.
+Use `Deco.load` instead of `loadFrom` to load definition files from the current directory.
 
-Deco.js factories are themselves decorators!  Use them to group decorators for use in other factories, or call them directly on existing objects.
+### Composition
 
-```javascript
-const Another = Deco(Composed2, Deco({ /* ... */ }));
-expect(Another().artist).to.equal('busy signal');
-expect(Another().genre).to.equal('reggae');
-
-// also...
-
-const existing = { a: 1, b: 2, c: 3 };
-Another.call(existing);
-
-expect(existing.a).to.equal(1);
-expect(existing.b).to.equal(2);
-expect(existing.c).to.equal(3);
-expect(existing.artist).to.equal('busy signal');
-expect(existing.genre).to.equal('reggae');
-```
-
-You can have factories create objects of other instances by passing in a constructor that returns an object.
+You can have factories create objects of custom instances by passing in a constructor that returns an object.
 
 ```javascript
-const ErrorFactory = Deco(Error);
-expect(ErrorFactory()).to.be.an.instanceof(Error);
+const ErrorDecorator = Deco(Error);
+expect(ErrorDecorator()).to.be.an.instanceof(Error);
 
 // or...
 
-const OtherFactory = Deco(() => ({ a: 1 }));
-const other = OtherFactory();
+const OtherDecorator = Deco(() => ({ a: 1 }));
+const other = OtherDecorator();
 expect(other.a).to.equal(1);
 
 // and even...
@@ -105,68 +124,84 @@ const C = class {
   ƒ () { return 1 }
 };
 
-const CompatibleFactory = Deco(C, {
+const CompatibleDecorator = Deco(C, {
   g () { return 2 }
 });
 
-const xyz = CompatibleFactory();
+const xyz = CompatibleDecorator();
 
 expect(xyz).to.be.an.instanceof(C);
 expect(xyz.ƒ()).to.equal(1);
 expect(xyz.g()).to.equal(2);
 
-// or all at once...
+// or compose several types of definitions in one go:
 
-const AllAtOnce = Deco(C, CompatibleFactory, function () { this.x = 'y' }, { z: 100 });
+const AllAtOnce = Deco(C, function () { this.x = 'y' }, { z: 100 });
 const all = AllAtOnce();
 expect(all).to.be.an.instanceof(C);
 expect(all.ƒ()).to.equal(1);
-expect(all.g()).to.equal(2);
 expect(all.x).to.equal('y');
 expect(all.z).to.equal(100);
 ```
 
-Defaults
+### Defaults
+
+Decorators can be associated with a defaults object.  Here's an example using the defaults in a constructor.
 
 ```javascript
-const FactoryWithDefaults = Deco({
-  constructor (given) {
-    const options = this.defaults(given);
-    expect(options).to.equal({ a: 1, b: 2, yoyo: 3 });
-  },
+const DecoratorWithDefaults = Deco({
   defaults: { a: 1, yoyo: 4 }
 });
 
-FactoryWithDefaults({ b: 2, yoyo: 3 });
+const CheckDecoratorWithDefaults = Deco(DecoratorWithDefaults, {
+  constructor (given) {
+    const options = this.defaults(given);
+    expect(options).to.equal({ a: 1, b: 2, yoyo: 3 });
+  }
+});
 
-const Factory1 = Deco({ defaults: { a: 1, yoyo: 4 }});
-const Factory2 = Factory1.defaults({ a: 2, b: 2 });
-const Factory3 = Deco(Factory2, {
+CheckDecoratorWithDefaults({ b: 2, yoyo: 3 });
+```
+
+Decorators have a `defaults` method which can be used to create a new immutable decorator by merging in new defaults.
+
+```javascript
+const DecoratorNewDefaults = DecoratorWithDefaults.defaults({ a: 2, b: 2 });
+const CheckDecoratorNewDefaults = Deco(DecoratorNewDefaults, {
   constructor () {
     expect(this.defaults()).to.equal({ a: 2, b: 2, yoyo: 4 });
   }
 });
+
+CheckDecoratorNewDefaults();
 ```
 
-Properties
+### Private Data
+
+Deco provides an easy mechanism for creating properties backed with private data.
 
 ```javascript
 const hidden = Deco.hidden();
 
-const FactoryWithSecrets = Deco({
-  get masonic () { return hidden(this).masonic },
-  set masonic (a) {
-    hidden(this).masonic = a + 1;
-    return this.masonic;
+const DecoratorWithSecrets = Deco({
+  get knox () {
+    return hidden(this).knox
+  },
+  set knox (a) {
+    hidden(this).knox = a + 1;
+    return this.knox;
   }
 });
-const o1 = FactoryWithSecrets();
-expect(o1.masonic).to.equal(undefined);
-o1.masonic = 1;
-expect(o1.masonic).to.equal(2);
+
+const o1 = DecoratorWithSecrets();
+expect(o1.knox).to.equal(undefined);
+o1.knox = 1;
+expect(o1.knox).to.equal(2);
 ```
 
-## Contact
+Try deco in your project today!
+
+### Contact
 
 -   <http://kun.io/>
 -   @wprl
