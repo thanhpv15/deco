@@ -2,7 +2,7 @@
 
 ![Codeship](https://codeship.com/projects/9440eb40-357b-0134-488a-06ccef9b395f/status?branch=v2)
 
-[![NPM](https://nodei.co/npm/deco.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/deco/)
+![NPM](https://nodei.co/npm/deco.png?downloads=true&downloadRank=true&stars=true)(https://nodei.co/npm/deco/)
 
 Compose modular decorators to build factories.  You're Node.js code will never have been as organized, reusable, and pluggable.
 
