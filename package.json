@@ -27,7 +27,7 @@
   "author": "William Riley-Land",
   "license": "MIT",
   "dependencies": {
-    "@kunio/d": "^1.0.0",
+    "@kunio/d": "^1.1.0",
     "bursary": "^3.0.0",
     "caller-path": "^1.0.0"
   },
