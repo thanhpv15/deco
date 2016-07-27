@@ -1,6 +1,6 @@
 # ![deco.js](https://raw.githubusercontent.com/wprl/deco/master/deco.jpeg "deco.js")
 
-![Codeship](https://codeship.com/projects/9440eb40-357b-0134-488a-06ccef9b395f/status?branch=v2)
+![Codeship](https://codeship.com/projects/9440eb40-357b-0134-488a-06ccef9b395f/status?branch=master)
 
 ![NPM](https://nodei.co/npm/deco.png?downloads=true&downloadRank=true&stars=true)
 
