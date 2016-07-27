@@ -16,7 +16,7 @@ Composable decorators for ES6.  You're Node.js code will never have been as orga
 
 ## Usage Overview
 
-The main functionality is provided by the `deco()` function.  It is used to compose decorators.
+The main functionality is provided by the `Deco()` function.  It is used to compose decorators.
 
 Decorators are defined when they are built.  They are immutable.
 
@@ -154,17 +154,17 @@ Decorators can be associated with a defaults object.  Here's an example using th
 
 ```javascript
 const DecoratorWithDefaults = Deco({
-  defaults: { a: 1, yoyo: 4 }
+  defaults: { a: 1, c: 4 }
 });
 
 const CheckDecoratorWithDefaults = Deco(DecoratorWithDefaults, {
   constructor (given) {
     const options = this.defaults(given);
-    expect(options).to.equal({ a: 1, b: 2, yoyo: 3 });
+    expect(options).to.equal({ a: 1, b: 2, c: 3 });
   }
 });
 
-CheckDecoratorWithDefaults({ b: 2, yoyo: 3 });
+CheckDecoratorWithDefaults({ b: 2, c: 3 });
 ```
 
 Decorators have a `defaults` method which can be used to create a new immutable decorator by merging in new defaults.
@@ -173,7 +173,7 @@ Decorators have a `defaults` method which can be used to create a new immutable 
 const DecoratorNewDefaults = DecoratorWithDefaults.defaults({ a: 2, b: 2 });
 const CheckDecoratorNewDefaults = Deco(DecoratorNewDefaults, {
   constructor () {
-    expect(this.defaults()).to.equal({ a: 2, b: 2, yoyo: 4 });
+    expect(this.defaults()).to.equal({ a: 2, b: 2, c: 4 });
   }
 });
 
