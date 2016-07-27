@@ -54,8 +54,8 @@ describe('Deco', () => {
     expect(Factory2).to.be.an.instanceof(Function);
     expect(o).not.to.be.an.instanceof(Factory1);
     expect(o).to.be.an.instanceof(Factory2);
-    expect(o.artist).to.equal('busy signal');
-    expect(o.genre).to.equal('reggae');
+    expect(o.flavor).to.equal('bitter');
+    expect(o.type).to.equal('liqueur');
 
     done();
   });

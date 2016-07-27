@@ -20,8 +20,8 @@ describe('Deco', () => {
     const o = Factory();
 
     expect(o).to.exist();
-    expect(o.artist).to.equal('busy signal');
-    expect(o.genre).to.equal('reggae');
+    expect(o.flavor).to.equal('bitter');
+    expect(o.type).to.equal('liqueur');
 
     done();
   });
@@ -31,8 +31,8 @@ describe('Deco', () => {
     const o = Factory();
 
     expect(o).to.exist();
-    expect(o.artist).to.equal('busy signal');
-    expect(o.genre).to.equal('reggae');
+    expect(o.flavor).to.equal('bitter');
+    expect(o.type).to.equal('liqueur');
 
     done();
   });
@@ -47,8 +47,8 @@ describe('Deco', () => {
     const o = Factory();
 
     expect(o).to.exist();
-    expect(o.artist).not.to.exist();
-    expect(o.genre).to.equal('reggae');
+    expect(o.flavor).not.to.exist();
+    expect(o.type).to.equal('liqueur');
 
     done();
   });

@@ -76,12 +76,16 @@ Decorators execute the constructors of composed definitions sequentially.
 
 ```javascript
 const TastyBeer = Deco(Beer, {
-  constructor () {
+  constructor (a) {
+    this.a = a;
     this.tasted = this.created + 86400000;
   }
 });
-expect(drink.created).to.be.above(1469655052201);
-expect(drink.tasted).to.be.above(1469741452201);
+
+const tasty = TastyBeer(1);
+expect(tasty.a).to.equal(1);
+expect(tasty.created).to.be.above(1469655052201);
+expect(tasty.tasted).to.be.above(1469741452201);
 ```
 
 ### Partials / Loading from File
