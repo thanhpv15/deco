@@ -13,8 +13,6 @@ const PrototypeTool = require('./prototype-tool');
 
 // ## Utility Functions
 //
-// Identity function.
-const identity = (a) => a;
 // Check if the given value is a class.
 const isClass = (a) => {
   if (a.toString().indexOf('class') !== 0) return false;
@@ -46,7 +44,7 @@ const concatenateConstructors = (factory, ...decorators) => {
       return (...parameters) => Reflect.construct(decorator, parameters);
     }
     return undefined;
-  }).filter(identity));
+  }).filter(D.identity));
 };
 // Merge any defaults of the given decorators into this factory's defaults.
 const concatenateDefaults = (factory, ...decorators) => {
@@ -57,7 +55,7 @@ const concatenateDefaults = (factory, ...decorators) => {
       return decorator.defaults;
     }
     return undefined;
-  }).filter(identity));
+  }).filter(D.identity));
 };
 // Concatenate the flattened prototype chain of the given decorators
 // to the factory prototype.
@@ -65,7 +63,7 @@ const concatenatePrototypes = (factory, ...decorators) => {
   D.assign(factory.prototype, ...decorators.map((decorator) => {
     if (typeof decorator !== 'function') return decorator;
     return PrototypeTool.flatten(decorator.prototype);
-  }).filter(identity));
+  }).filter(D.identity));
 };
 // Use assignment based inheritence to mix in members from objects, vanilla
 // JavaScript constructors, and/or Deco decorators.
@@ -162,7 +160,7 @@ const Deco = module.exports = function Deco (...decorators) {
   // then apply the given decorators.
   PrototypeTool.set(factory, Deco);
   initialize(factory);
-  concatenate(factory, ...decorators.filter(identity));
+  concatenate(factory, ...decorators.filter(D.identity));
 
   // Make the factory immutable.
   Object.freeze(factory);
